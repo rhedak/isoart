@@ -23,11 +23,14 @@ from isoart import (
     AW_PINE,
     AW_ROUND_TREE,
     AW_SNOW_PINE,
+    AW_TANK_BLUE,
+    AW_TANK_RED,
     IsoCanvas,
     House,
     Mountain,
     PineTree,
     RoundTree,
+    Tank,
     TerrainType,
     TopDownCanvas,
 )
@@ -54,6 +57,9 @@ SPRITES: list[tuple[str, IsoSprite]] = [
     ("house_red",     House(palette=AW_HOUSE_RED)),
     ("house_blue",    House(palette=AW_HOUSE_BLUE)),
     ("house_neutral", House(palette=AW_HOUSE_NEUTRAL)),
+    # Tanks
+    ("tank_red",  Tank(palette=AW_TANK_RED)),
+    ("tank_blue", Tank(palette=AW_TANK_BLUE)),
 ]
 
 

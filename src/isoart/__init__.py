@@ -13,8 +13,10 @@ from .palette import (
     AW_PINE,
     AW_ROUND_TREE,
     AW_SNOW_PINE,
+    AW_TANK_BLUE,
+    AW_TANK_RED,
 )
-from .sprites import House, Mountain, PineTree, RoundTree
+from .sprites import House, Mountain, PineTree, RoundTree, Tank
 from .transform import screen_to_world, tile_diamond, world_to_screen
 
 __all__ = [
@@ -25,6 +27,7 @@ __all__ = [
     "RoundTree",
     "Mountain",
     "House",
+    "Tank",
     "world_to_screen",
     "screen_to_world",
     "tile_diamond",
@@ -39,4 +42,6 @@ __all__ = [
     "AW_HOUSE_RED",
     "AW_HOUSE_BLUE",
     "AW_HOUSE_NEUTRAL",
+    "AW_TANK_RED",
+    "AW_TANK_BLUE",
 ]

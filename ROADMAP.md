@@ -4,11 +4,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Phase 1 + 1.5 done. Ready for Phase 2 (Tank sprite).
+**Phase:** Phase 1, 1.5, 2 done. Ready for Phase 3 (scene composition).
 **Last update:** 2026-04-24
-**Last commit:** pending — Phase 1.5 commit
-**Sample scorecard:** 12/12 PASS (pines, round trees, mountains, houses). `terrain_preview.png` (iso) + `topdown_preview.png` (square) added.
-**Tests:** 22/22 passing. Ruff clean.
+**Last commit:** pending — Phase 2 commit
+**Sample scorecard:** 14/14 PASS (pines, round trees, mountains, houses, tanks). `terrain_preview.png` + `topdown_preview.png` added.
+**Tests:** 26/26 passing. Ruff clean.
 
 ## Scope (locked)
 
@@ -49,13 +49,13 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - Whether Phase 3 scene composition uses `TopDownCanvas` (likely yes, given the reference).
 - Multi-tile-size support (for now, `tile_size` is a single integer; both w and h).
 
-### Phase 2 — Tank sprite + faction palettes
-- [ ] Add `AW_TANK_RED`, `AW_TANK_BLUE` in `src/isoart/palette.py`
-- [ ] Create `src/isoart/sprites/units.py` with `Tank(IsoSprite)`
-- [ ] Export `Tank` from `src/isoart/sprites/__init__.py` and `src/isoart/__init__.py`
-- [ ] Add `tank_red`, `tank_blue` to `samples/generate.py`
-- [ ] Iterate on Tank silhouette (PASS/FAIL loop, up to 3 passes)
-- [ ] Unit test: `tests/test_units.py` — render Tank with both palettes
+### Phase 2 — Tank sprite + faction palettes ✅
+- [x] Add `AW_TANK_RED`, `AW_TANK_BLUE` in `src/isoart/palette.py`
+- [x] Create `src/isoart/sprites/units.py` with `Tank(IsoSprite)`
+- [x] Export `Tank` from `src/isoart/sprites/__init__.py` and `src/isoart/__init__.py`
+- [x] Add `tank_red`, `tank_blue` to `samples/generate.py`
+- [x] Iterate on Tank silhouette — 2 iterations to PASS (size-up + turret contrast + barrel/tread visibility)
+- [x] Unit test: `tests/test_units.py` — 4 tests (default, both palettes, anchor bounds, red-vs-blue differ)
 
 ### Phase 3 — Scene composition
 - [ ] Create `examples/aw_dogfights.py`
@@ -90,8 +90,8 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 | `house_red` | PASS | 1 (+ polish ×2) |
 | `house_blue` | PASS | 1 (+ polish ×2) |
 | `house_neutral` | PASS | 1 (+ polish ×2) |
-| `tank_red` | — | — |
-| `tank_blue` | — | — |
+| `tank_red` | PASS | 2 |
+| `tank_blue` | PASS | 2 |
 
 ## Decisions log
 

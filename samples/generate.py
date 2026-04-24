@@ -28,6 +28,7 @@ from isoart import (
     Mountain,
     PineTree,
     RoundTree,
+    TerrainType,
 )
 from isoart.sprites.base import IsoSprite
 
@@ -73,8 +74,32 @@ def make_sample(name: str, sprite: IsoSprite) -> None:
     print(f"  {name}.png")
 
 
+def make_terrain_preview() -> None:
+    """Render a multi-terrain map so the tile system gets a visual sample too."""
+    G, W, B, R = TerrainType.GRASS, TerrainType.WATER, TerrainType.BEACH, TerrainType.ROAD
+    tiles = [
+        [G, G, G, B, W, W, B, G, G, G],
+        [G, G, B, W, W, W, W, B, G, G],
+        [G, R, R, R, R, R, R, R, R, G],
+        [G, G, B, W, W, W, W, B, G, G],
+        [G, G, G, B, W, W, B, G, G, G],
+    ]
+    cols, rows = len(tiles[0]), len(tiles)
+    tw, th = 32, 16
+    w = (cols + rows) * tw // 2 + 40
+    h = (cols + rows) * th // 2 + 40
+    canvas = IsoCanvas(
+        w, h, bg_color=(28, 28, 36, 255),
+        tile_w=tw, tile_h=th, origin=(w // 2, 20),
+    )
+    canvas.draw_map(tiles)
+    canvas.save(str(OUT / "terrain_preview.png"), scale=SCALE)
+    print("  terrain_preview.png")
+
+
 if __name__ == "__main__":
     print(f"Writing to {OUT}/")
     for name, sprite in SPRITES:
         make_sample(name, sprite)
+    make_terrain_preview()
     print("Done.")

@@ -21,6 +21,7 @@ from .palette import (
     WATER_OUTLINE,
 )
 from .sprites.base import IsoSprite
+from .sprites.terrain import _darken
 from .transform import tile_diamond, world_to_screen
 
 
@@ -169,6 +170,19 @@ class TopDownCanvas:
     This is the right projection for game-screen-style maps where
     tiles should read as a flat top-down board. Use :class:`IsoCanvas`
     instead when you want diamond-tile iso terrain.
+
+    Parameters
+    ----------
+    tile_outline:
+        Controls how adjacent tiles are separated. AW-style maps want
+        subtle seams, not a chess-board grid.
+
+        * ``"soft"`` (default): 1-px border darkened ~15% from the tile's
+          own fill color — reads as a gentle shadow rather than a line.
+        * ``"hard"``: the terrain's palette ``outline`` color (near-black).
+          Useful for debugging or a board-game look.
+        * ``None`` or ``False``: no outline at all — tiles butt up
+          against each other seamlessly.
     """
 
     def __init__(
@@ -178,10 +192,12 @@ class TopDownCanvas:
         bg_color: tuple[int, int, int, int] = (0, 0, 0, 0),
         tile_size: int = 24,
         origin: tuple[int, int] = (0, 0),
+        tile_outline: str | bool | None = "soft",
     ) -> None:
         self.tile_size = tile_size
         self.image = Image.new("RGBA", (width, height), bg_color)
         self.origin = origin
+        self.tile_outline = tile_outline
 
     # ------------------------------------------------------------------
     # Terrain
@@ -199,7 +215,15 @@ class TopDownCanvas:
         x0 = self.origin[0] + gx * ts
         y0 = self.origin[1] + gy * ts
         draw = ImageDraw.Draw(self.image)
-        draw.rectangle([x0, y0, x0 + ts - 1, y0 + ts - 1], fill=light, outline=outline)
+
+        if self.tile_outline == "soft":
+            tile_out: tuple[int, int, int, int] | None = _darken(light, 0.15)
+        elif self.tile_outline == "hard":
+            tile_out = outline
+        else:
+            tile_out = None
+
+        draw.rectangle([x0, y0, x0 + ts - 1, y0 + ts - 1], fill=light, outline=tile_out)
 
     def draw_map(
         self,

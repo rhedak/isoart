@@ -4,11 +4,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** PoC shipped; polish round 1 in progress. Phase 5 done.
+**Phase:** Polish round 1 — Phases 5 & 6 done. Phase 7 (recompose scene) pending.
 **Last update:** 2026-04-24
-**Last commit:** pending — Phase 5 commit
-**Sample scorecard:** 14/14 PASS. `aw_dogfights.png` PoC scene acceptable but far from AW reference — polish round 1 targets scale/grid/density.
-**Tests:** 30/30 passing. Ruff clean.
+**Last commit:** pending — Phase 6 commit
+**Sample scorecard:** 14/14 PASS. `topdown_preview.png` now has soft seams.
+**Tests:** 32/32 passing. Ruff clean.
 
 ## Scope (locked)
 
@@ -73,11 +73,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - [x] Default behavior unchanged — `tank_red.png` / `tank_blue.png` samples pixel-identical
 - [x] 4 new tests: default size, scale-shrinks-size, scaled-still-renders, scale-floor-prevents-degenerate
 
-### Phase 6 — Grid softness on `TopDownCanvas` (pending)
-- [ ] Add `_darken` helper
-- [ ] `TopDownCanvas(tile_outline="soft"|None|False)` parameter, default `"soft"`
-- [ ] `draw_tile` uses fill-relative darkening for soft outlines
-- [ ] Test: soft outline pixel differs from `*_OUTLINE` and is closer to fill color
+### Phase 6 — Grid softness on `TopDownCanvas` ✅
+- [x] `_darken` helper added in `sprites/terrain.py`
+- [x] `TopDownCanvas(tile_outline="soft"|"hard"|None)` parameter, default `"soft"`
+- [x] `draw_tile` uses fill-relative 15%-darkening for soft seams
+- [x] 2 new tests: soft differs from hard & is closer to fill; `None` leaves fill color exposed
 
 ### Phase 7 — Scene recomposition (pending)
 - [ ] Recompose `examples/aw_dogfights.py` for density, asymmetric layout, forest patches, tighter bases

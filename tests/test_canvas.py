@@ -136,6 +136,41 @@ def test_topdown_sprite_anchors_at_tile_center_bottom():
     assert probe.foot == (30 + 50, 40 + 80)
 
 
+def test_topdown_soft_outline_differs_from_hard():
+    """Soft outline should be close to the tile fill, not the near-black palette outline."""
+    from isoart.palette import GRASS_LIGHT, TILE_OUTLINE
+
+    soft = TopDownCanvas(100, 100, tile_size=20, origin=(10, 10), tile_outline="soft")
+    hard = TopDownCanvas(100, 100, tile_size=20, origin=(10, 10), tile_outline="hard")
+    soft.draw_tile(TerrainType.GRASS, 0, 0)
+    hard.draw_tile(TerrainType.GRASS, 0, 0)
+
+    # Top-left corner of the tile = outline pixel
+    soft_px = soft.image.getpixel((10, 10))
+    hard_px = hard.image.getpixel((10, 10))
+
+    # Hard outline matches the palette near-black outline
+    assert hard_px == TILE_OUTLINE
+
+    # Soft outline is darker than fill but significantly lighter than hard
+    assert soft_px != hard_px
+    assert soft_px != GRASS_LIGHT  # distinct from fill
+    # Soft outline should be closer (in green channel) to the fill than to hard outline
+    dist_to_fill = abs(soft_px[1] - GRASS_LIGHT[1])
+    dist_to_hard = abs(soft_px[1] - TILE_OUTLINE[1])
+    assert dist_to_fill < dist_to_hard
+
+
+def test_topdown_no_outline():
+    """tile_outline=None should leave the border pixel as the fill color."""
+    from isoart.palette import GRASS_LIGHT
+
+    c = TopDownCanvas(100, 100, tile_size=20, origin=(10, 10), tile_outline=None)
+    c.draw_tile(TerrainType.GRASS, 0, 0)
+    # Top-left corner: no outline means pixel is fill color
+    assert c.image.getpixel((10, 10)) == GRASS_LIGHT
+
+
 def test_topdown_sprite_gz_raises():
     from isoart.sprites.base import IsoSprite
 

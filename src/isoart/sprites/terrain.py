@@ -416,3 +416,17 @@ def _lighten(
         int(b + (255 - b) * amount),
         a,
     )
+
+
+def _darken(
+    color: tuple[int, int, int, int],
+    amount: float,
+) -> tuple[int, int, int, int]:
+    """Blend toward black by *amount* ∈ [0, 1]."""
+    r, g, b, a = color
+    return (
+        int(r * (1 - amount)),
+        int(g * (1 - amount)),
+        int(b * (1 - amount)),
+        a,
+    )

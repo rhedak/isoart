@@ -4,11 +4,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** 🎉 All phases complete. PoC ships.
+**Phase:** PoC shipped; polish round 1 in progress. Phase 5 done.
 **Last update:** 2026-04-24
-**Last commit:** pending — Phase 4 commit
-**Sample scorecard:** 14/14 PASS. `aw_dogfights.png` PoC scene renders correctly on first try.
-**Tests:** 26/26 passing. Ruff clean.
+**Last commit:** pending — Phase 5 commit
+**Sample scorecard:** 14/14 PASS. `aw_dogfights.png` PoC scene acceptable but far from AW reference — polish round 1 targets scale/grid/density.
+**Tests:** 30/30 passing. Ruff clean.
 
 ## Scope (locked)
 
@@ -66,6 +66,23 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - [x] 4 red tanks near red base, 4 blue tanks near blue base
 - [x] Draw order: terrain → sprites back-to-front by `(gy, gx)`
 - [x] Save `aw_dogfights.png` at scale 2 — renders as a recognisable AW Dogfights scene
+
+### Phase 5 — Tank `scale` parameter ✅
+- [x] `Tank(scale: float = 1.0)` — proportional shrink with per-feature floors so small tanks still show turret/barrel/treads
+- [x] `_BASE_W`, `_BASE_H` class constants; `get_size()` returns scaled dims
+- [x] Default behavior unchanged — `tank_red.png` / `tank_blue.png` samples pixel-identical
+- [x] 4 new tests: default size, scale-shrinks-size, scaled-still-renders, scale-floor-prevents-degenerate
+
+### Phase 6 — Grid softness on `TopDownCanvas` (pending)
+- [ ] Add `_darken` helper
+- [ ] `TopDownCanvas(tile_outline="soft"|None|False)` parameter, default `"soft"`
+- [ ] `draw_tile` uses fill-relative darkening for soft outlines
+- [ ] Test: soft outline pixel differs from `*_OUTLINE` and is closer to fill color
+
+### Phase 7 — Scene recomposition (pending)
+- [ ] Recompose `examples/aw_dogfights.py` for density, asymmetric layout, forest patches, tighter bases
+- [ ] Use `Tank(scale=0.7)` and smaller House dimensions in scene
+- [ ] Iterate: compare to reference, rate gaps, up to 2 more passes
 
 ### Phase 4 — Docs + polish ✅
 - [x] Update README: `TopDownCanvas`, `TerrainType`, `draw_map`, `Tank`, `AW_TANK_RED/BLUE`. New intro mentions both projections.

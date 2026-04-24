@@ -19,13 +19,23 @@ class Tank(IsoSprite):
     ----------
     palette:
         Color dict with keys: outline, body_l, body_d, turret, barrel, tread.
+    scale:
+        Proportional size multiplier. ``1.0`` renders at 28×22 (the shape
+        we tuned against AW references). Values below 1 shrink all
+        internal dimensions with a floor that keeps key features visible
+        (barrel, turret, treads) — use ~0.6-0.8 for tile-sized map units.
     """
+
+    _BASE_W = 28
+    _BASE_H = 22
 
     def __init__(
         self,
         palette: dict[str, tuple[int, int, int, int]] | None = None,
+        scale: float = 1.0,
     ) -> None:
         self.palette = palette if palette is not None else dict(AW_TANK_RED)
+        self.scale = max(0.35, scale)
         self._buf: Image.Image | None = None
 
     # ------------------------------------------------------------------
@@ -33,7 +43,10 @@ class Tank(IsoSprite):
     # ------------------------------------------------------------------
 
     def get_size(self) -> tuple[int, int]:
-        return 28, 22
+        return (
+            max(12, int(round(self._BASE_W * self.scale))),
+            max(10, int(round(self._BASE_H * self.scale))),
+        )
 
     def get_anchor(self) -> tuple[int, int]:
         w, h = self.get_size()
@@ -56,12 +69,21 @@ class Tank(IsoSprite):
         buf = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         draw = ImageDraw.Draw(buf)
         p = self.palette
+        s = self.scale
 
-        # Dimensions
-        body_w, body_d, body_h = 16, 9, 6
-        turret_w, turret_d, turret_h = 9, 5, 4
-        tread_h = 3
-        barrel_len = 8
+        # Dimensions (scaled, with per-feature floors so small tanks still
+        # show a turret/barrel/treads).
+        def _sz(base: int, floor: int) -> int:
+            return max(floor, int(round(base * s)))
+
+        body_w   = _sz(16, 9)
+        body_d   = _sz(9, 5)
+        body_h   = _sz(6, 4)
+        turret_w = _sz(9, 5)
+        turret_d = _sz(5, 3)
+        turret_h = _sz(4, 2)
+        tread_h  = _sz(3, 2)
+        barrel_len = _sz(8, 4)
 
         cx = w // 2
         cy = h - 1
@@ -89,7 +111,8 @@ class Tank(IsoSprite):
             255,
         )
         tread_y_mid = (tr_fl[1] + tr_fl_t[1]) // 2
-        for dash_x in range(tr_fl[0] + 2, tr_fr[0] - 1, 3):
+        dash_step = max(2, int(round(3 * s)))
+        for dash_x in range(tr_fl[0] + 2, tr_fr[0] - 1, dash_step):
             draw.point((dash_x, tread_y_mid), fill=tread_hi)
 
         # ---- Body (iso box sitting on treads) ----

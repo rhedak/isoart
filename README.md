@@ -1,8 +1,16 @@
 # isoart
 
-Isometric pixel-art asset library for Python. Draw iso-grid scenes with sprites and export them as PNG images.
+Isometric pixel-art asset library for Python. Draw iso-grid or top-down tile scenes with sprites and export them as PNG images.
 
 ![demo](demo.png)
+
+## Gallery
+
+An AW-inspired battle map generated entirely with the library (top-down terrain + iso sprites):
+
+![aw-dogfights](examples/aw_dogfights.png)
+
+Run it yourself: `python examples/aw_dogfights.py`.
 
 ## Install
 
@@ -43,9 +51,16 @@ canvas.save("demo.png", scale=2)
 
 ## API
 
+Two canvas classes are provided:
+
+- `IsoCanvas` — classic 2:1 isometric diamond tiles (e.g. simcity/rpg look).
+- `TopDownCanvas` — flat square tiles with iso-perspective sprites on top (AW battle-map look).
+
+Sprites, palettes, and multi-terrain maps work with both.
+
 ### `IsoCanvas`
 
-The main drawing surface.
+Isometric diamond-tile drawing surface.
 
 ```python
 IsoCanvas(
@@ -60,10 +75,43 @@ IsoCanvas(
 
 | Method | Description |
 |--------|-------------|
-| `draw_grid(cols, rows)` | Draw a checkerboard diamond-tile grid |
+| `draw_grid(cols, rows)` | Draw a checkerboard diamond-tile grid (all grass) |
+| `draw_tile(tile_type, gx, gy)` | Paint a single diamond tile of a given `TerrainType` |
+| `draw_map(tiles)` | Paint a 2-D `list[list[TerrainType]]` map |
 | `draw(sprite, gx, gy, gz=0)` | Place a sprite at grid coordinates |
 | `save(path, scale=1)` | Save as PNG, optionally upscaled with nearest-neighbour |
 | `get_image()` | Return the underlying `PIL.Image` |
+
+### `TopDownCanvas`
+
+Flat square-tile drawing surface. Terrain renders orthogonally; sprites still use their iso geometry and anchor at the tile's centre-bottom.
+
+```python
+TopDownCanvas(
+    width: int,
+    height: int,
+    bg_color: tuple[int, int, int, int] = (0, 0, 0, 0),
+    tile_size: int = 24,
+    origin: tuple[int, int] = (0, 0),
+)
+```
+
+Methods mirror `IsoCanvas`: `draw_tile`, `draw_map`, `draw`, `save`, `get_image`.
+
+### Terrain tiles
+
+```python
+from isoart import TerrainType
+
+# Any of: TerrainType.GRASS, WATER, BEACH, ROAD
+tiles = [
+    [TerrainType.GRASS, TerrainType.BEACH, TerrainType.WATER],
+    [TerrainType.ROAD,  TerrainType.GRASS, TerrainType.BEACH],
+]
+canvas.draw_map(tiles)
+```
+
+Each tile paints a light/dark checker variation of its palette plus an outline.
 
 ### Sprites
 
@@ -97,15 +145,23 @@ Mountain(
 )
 ```
 
-**`House`** — iso box with a pitched roof, window, and door.
+**`House`** — chunky iso cube with a flat roof slab, windows, and a rooftop flag.
 
 ```python
 House(
-    width: int = 26,
+    width: int = 24,
     depth: int = 18,
-    wall_h: int = 13,
-    roof_h: int = 11,
+    wall_h: int = 20,
+    roof_h: int = 5,
     palette: dict = AW_HOUSE_NEUTRAL,
+)
+```
+
+**`Tank`** — iso pixel-art tank with tread platform, body, turret, and barrel.
+
+```python
+Tank(
+    palette: dict = AW_TANK_RED,
 )
 ```
 
@@ -124,6 +180,8 @@ House(
 | `AW_HOUSE_RED` | `House` | Red roof |
 | `AW_HOUSE_BLUE` | `House` | Blue roof |
 | `AW_HOUSE_NEUTRAL` | `House` | Tan roof |
+| `AW_TANK_RED` | `Tank` | Red faction unit |
+| `AW_TANK_BLUE` | `Tank` | Blue faction unit |
 
 See `samples/` for a rendered PNG of each variant.
 

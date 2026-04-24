@@ -70,11 +70,9 @@ class Tank(IsoSprite):
         tr_fl = (cx - body_w // 2 - 1, cy)
         tr_fr = (cx + body_w // 2 + 1, cy)
         tr_sr = (tr_fr[0] + body_d, tr_fr[1] - body_d // 2)
-        tr_bl = (tr_fl[0] + body_d, tr_fl[1] - body_d // 2)
         tr_fl_t = (tr_fl[0], tr_fl[1] - tread_h)
         tr_fr_t = (tr_fr[0], tr_fr[1] - tread_h)
         tr_sr_t = (tr_sr[0], tr_sr[1] - tread_h)
-        tr_bl_t = (tr_bl[0], tr_bl[1] - tread_h)
 
         # Front face of tread
         draw.polygon([tr_fl_t, tr_fr_t, tr_fr, tr_fl], fill=p["tread"])

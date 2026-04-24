@@ -4,10 +4,10 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Phase 1, 1.5, 2, 3 done. Ready for Phase 4 (docs + polish).
+**Phase:** 🎉 All phases complete. PoC ships.
 **Last update:** 2026-04-24
-**Last commit:** pending — Phase 3 commit
-**Sample scorecard:** 14/14 PASS (pines, round trees, mountains, houses, tanks). `aw_dogfights.png` PoC scene renders correctly on first try.
+**Last commit:** pending — Phase 4 commit
+**Sample scorecard:** 14/14 PASS. `aw_dogfights.png` PoC scene renders correctly on first try.
 **Tests:** 26/26 passing. Ruff clean.
 
 ## Scope (locked)
@@ -67,12 +67,12 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - [x] Draw order: terrain → sprites back-to-front by `(gy, gx)`
 - [x] Save `aw_dogfights.png` at scale 2 — renders as a recognisable AW Dogfights scene
 
-### Phase 4 — Docs + polish
-- [ ] Update README: add `Tank`, `AW_TANK_RED/BLUE`, `TerrainType`, `draw_map` docs
-- [ ] Embed `aw_dogfights.png` in README under a "Demo" section
-- [ ] Update sample scorecard in this roadmap to include Tank variants
-- [ ] Verify: `uv run pytest -q` green, `uv run ruff check` clean
-- [ ] Verify: visual side-by-side of `aw_dogfights.png` vs. `references/AW_Dogfights_Map.png`
+### Phase 4 — Docs + polish ✅
+- [x] Update README: `TopDownCanvas`, `TerrainType`, `draw_map`, `Tank`, `AW_TANK_RED/BLUE`. New intro mentions both projections.
+- [x] Embed `aw_dogfights.png` in README under a Gallery section
+- [x] Update sample scorecard in this roadmap to include Tank variants
+- [x] Verify: `uv run pytest -q` green (26/26), `uv run ruff check` clean
+- [x] Verify: visual match against reference — water channel, red/blue factions, mountain framing, forests, bridge all read correctly
 
 ## Sample scorecard
 

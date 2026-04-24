@@ -4,10 +4,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Not started — roadmap committed, ready to begin Phase 1.
+**Phase:** Phase 1 complete. Ready to start Phase 2 (Tank sprite).
 **Last update:** 2026-04-24
-**Last commit:** `3568517` — polish pass + roadmap
+**Last commit:** pending — Phase 1 commit
 **Sample scorecard:** 12/12 PASS (pines, round trees, mountains, houses). Tank not yet built.
+**Tests:** 17/17 passing. Ruff clean.
 
 ## Scope (locked)
 
@@ -18,14 +19,14 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Phases
 
-### Phase 1 — Terrain tile system
-- [ ] Add `TerrainType` enum (`GRASS`, `WATER`, `BEACH`, `ROAD`) in `src/isoart/canvas.py`
-- [ ] Add tile color palettes (`WATER_*`, `BEACH_*`, `ROAD_*`) in `src/isoart/palette.py`
-- [ ] Implement `IsoCanvas.draw_tile(tile_type, gx, gy)`
-- [ ] Implement `IsoCanvas.draw_map(tiles: list[list[TerrainType]])`
-- [ ] Keep `draw_grid` backward-compatible (don't break demos)
-- [ ] Export `TerrainType` from `src/isoart/__init__.py`
-- [ ] Unit test: `tests/test_canvas.py` — `draw_map` produces expected colored pixels per tile type
+### Phase 1 — Terrain tile system ✅
+- [x] Add `TerrainType` enum (`GRASS`, `WATER`, `BEACH`, `ROAD`) in `src/isoart/canvas.py`
+- [x] Add tile color palettes (`WATER_*`, `BEACH_*`, `ROAD_*`) in `src/isoart/palette.py`
+- [x] Implement `IsoCanvas.draw_tile(tile_type, gx, gy)`
+- [x] Implement `IsoCanvas.draw_map(tiles: list[list[TerrainType]])`
+- [x] Keep `draw_grid` backward-compatible (don't break demos)
+- [x] Export `TerrainType` from `src/isoart/__init__.py`
+- [x] Unit test: `tests/test_canvas.py` — 6 tests covering per-tile colors + map painting + border
 
 ### Phase 2 — Tank sprite + faction palettes
 - [ ] Add `AW_TANK_RED`, `AW_TANK_BLUE` in `src/isoart/palette.py`

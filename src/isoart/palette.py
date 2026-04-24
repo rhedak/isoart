@@ -119,7 +119,22 @@ AW_BLUE_ROUND_TREE: dict[str, tuple[int, int, int, int]] = {
     "trunk_d":   (60,  35,  10,  255),
 }
 
-# Neutral grass tile colors
-GRASS_LIGHT: tuple[int, int, int, int] = (168, 200, 72, 255)
-GRASS_DARK:  tuple[int, int, int, int] = (136, 168, 48, 255)
-TILE_OUTLINE: tuple[int, int, int, int] = (88,  120, 24, 255)
+# Grass tile colors
+GRASS_LIGHT:   tuple[int, int, int, int] = (168, 200, 72,  255)
+GRASS_DARK:    tuple[int, int, int, int] = (136, 168, 48,  255)
+TILE_OUTLINE:  tuple[int, int, int, int] = (88,  120, 24,  255)
+
+# Water tile colors — mid blue with checker variation
+WATER_LIGHT:   tuple[int, int, int, int] = (105, 165, 230, 255)
+WATER_DARK:    tuple[int, int, int, int] = (70,  130, 205, 255)
+WATER_OUTLINE: tuple[int, int, int, int] = (40,  80,  150, 255)
+
+# Beach / sand tile colors
+BEACH_LIGHT:   tuple[int, int, int, int] = (245, 225, 150, 255)
+BEACH_DARK:    tuple[int, int, int, int] = (220, 195, 110, 255)
+BEACH_OUTLINE: tuple[int, int, int, int] = (170, 140, 70,  255)
+
+# Road / paved tile colors
+ROAD_LIGHT:    tuple[int, int, int, int] = (185, 185, 185, 255)
+ROAD_DARK:     tuple[int, int, int, int] = (145, 145, 145, 255)
+ROAD_OUTLINE:  tuple[int, int, int, int] = (85,  85,  85,  255)

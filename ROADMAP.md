@@ -4,8 +4,9 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Not started — roadmap created, ready to begin Phase 1.
+**Phase:** Not started — roadmap committed, ready to begin Phase 1.
 **Last update:** 2026-04-24
+**Last commit:** `3568517` — polish pass + roadmap
 **Sample scorecard:** 12/12 PASS (pines, round trees, mountains, houses). Tank not yet built.
 
 ## Scope (locked)
@@ -76,10 +77,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - **2026-04-24** — One unit type (Tank); two faction palettes.
 - **2026-04-24** — Three tile types: water, beach, road. Road is single non-directional variant for PoC.
 - **2026-04-24** — Pillow-only. Matplotlib rejected for this PoC (anti-aliasing fights pixel-art aesthetic; unnecessary dep).
+- **2026-04-24** — `aw_dogfights.png` will be committed to the repo so the README can embed it without a build step.
+- **2026-04-24** — Commit after every step; roadmap updated in each commit.
 
 ## Open questions / follow-ups
 
-- Should `aw_dogfights.png` be committed to the repo (for README embed) or gitignored?
 - After PoC passes, revisit: directional road tiles (NS/EW/corners), multi-tile bases (HQs, factories), more unit types (infantry, artillery, plane).
 
 ## Risks / non-goals

@@ -4,10 +4,10 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Phase 1, 1.5, 2 done. Ready for Phase 3 (scene composition).
+**Phase:** Phase 1, 1.5, 2, 3 done. Ready for Phase 4 (docs + polish).
 **Last update:** 2026-04-24
-**Last commit:** pending — Phase 2 commit
-**Sample scorecard:** 14/14 PASS (pines, round trees, mountains, houses, tanks). `terrain_preview.png` + `topdown_preview.png` added.
+**Last commit:** pending — Phase 3 commit
+**Sample scorecard:** 14/14 PASS (pines, round trees, mountains, houses, tanks). `aw_dogfights.png` PoC scene renders correctly on first try.
 **Tests:** 26/26 passing. Ruff clean.
 
 ## Scope (locked)
@@ -57,15 +57,15 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - [x] Iterate on Tank silhouette — 2 iterations to PASS (size-up + turret contrast + barrel/tread visibility)
 - [x] Unit test: `tests/test_units.py` — 4 tests (default, both palettes, anchor bounds, red-vs-blue differ)
 
-### Phase 3 — Scene composition
-- [ ] Create `examples/aw_dogfights.py`
-- [ ] Define ~22×14 tile grid (grass-left / water-middle / grass-right + beach borders + road)
-- [ ] Place mountains along the reference's mountain lines
-- [ ] Scatter pine + round trees across both land masses
-- [ ] Cluster red houses on left, blue houses on right (as "bases")
-- [ ] Place 3–4 red tanks near red base, 3–4 blue tanks near blue base
-- [ ] Draw order: terrain → sprites back-to-front by `gy`
-- [ ] Save `aw_dogfights.png` at scale 3–4
+### Phase 3 — Scene composition ✅
+- [x] Create `examples/aw_dogfights.py`
+- [x] 20×12 tile grid (grass-left / beach / water / beach / grass-right) with a road crossing the water as a bridge
+- [x] Mountains framing all four corners + right edge (matches reference's mountain chain)
+- [x] Pine + round trees scattered across both land masses (green + autumn + blue-pine variety)
+- [x] 4 red houses clustered as red base on west, 4 blue houses as blue base on east
+- [x] 4 red tanks near red base, 4 blue tanks near blue base
+- [x] Draw order: terrain → sprites back-to-front by `(gy, gx)`
+- [x] Save `aw_dogfights.png` at scale 2 — renders as a recognisable AW Dogfights scene
 
 ### Phase 4 — Docs + polish
 - [ ] Update README: add `Tank`, `AW_TANK_RED/BLUE`, `TerrainType`, `draw_map` docs

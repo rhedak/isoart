@@ -35,6 +35,90 @@ AW_BLUE_PINE: dict[str, tuple[int, int, int, int]] = {
     "trunk_d":   (60,  35,  10,  255),
 }
 
+# Mountain palettes — keys: outline, light, mid, dark, base, base_d
+AW_MOUNTAIN: dict[str, tuple[int, int, int, int]] = {
+    "outline": (40,  55,  80,  255),
+    "light":   (165, 185, 210, 255),
+    "mid":     (120, 145, 175, 255),
+    "dark":    (80,  100, 130, 255),
+    "base":    (95,  115, 145, 255),
+    "base_d":  (60,  75,  100, 255),
+}
+
+AW_MOUNTAIN_SNOW: dict[str, tuple[int, int, int, int]] = {
+    "outline": (80,  100, 120, 255),
+    "light":   (240, 245, 255, 255),
+    "mid":     (200, 215, 235, 255),
+    "dark":    (150, 170, 200, 255),
+    "base":    (120, 145, 175, 255),
+    "base_d":  (80,  100, 130, 255),
+}
+
+# House palettes — keys: outline, roof_l, roof_r, roof_ridge, wall_f, wall_s, window, door
+AW_HOUSE_RED: dict[str, tuple[int, int, int, int]] = {
+    "outline":    (30,  20,  20,  255),
+    "roof_l":     (210, 70,  50,  255),
+    "roof_r":     (160, 40,  30,  255),
+    "roof_ridge": (240, 110, 80,  255),
+    "wall_f":     (230, 215, 185, 255),
+    "wall_s":     (185, 170, 145, 255),
+    "window":     (130, 185, 220, 255),
+    "door":       (120, 80,  40,  255),
+}
+
+AW_HOUSE_BLUE: dict[str, tuple[int, int, int, int]] = {
+    "outline":    (20,  20,  40,  255),
+    "roof_l":     (60,  100, 200, 255),
+    "roof_r":     (35,  65,  155, 255),
+    "roof_ridge": (100, 145, 230, 255),
+    "wall_f":     (220, 225, 240, 255),
+    "wall_s":     (175, 180, 200, 255),
+    "window":     (130, 185, 220, 255),
+    "door":       (80,  80,  140, 255),
+}
+
+AW_HOUSE_NEUTRAL: dict[str, tuple[int, int, int, int]] = {
+    "outline":    (30,  25,  20,  255),
+    "roof_l":     (170, 145, 100, 255),
+    "roof_r":     (130, 110, 70,  255),
+    "roof_ridge": (200, 175, 130, 255),
+    "wall_f":     (230, 215, 185, 255),
+    "wall_s":     (185, 170, 145, 255),
+    "window":     (130, 185, 220, 255),
+    "door":       (120, 80,  40,  255),
+}
+
+# Round-tree palettes — keys: outline, dark, mid, light, highlight, trunk, trunk_d
+AW_ROUND_TREE: dict[str, tuple[int, int, int, int]] = {
+    "outline":   (20,  50,  20,  255),
+    "dark":      (45,  100, 45,  255),
+    "mid":       (70,  145, 60,  255),
+    "light":     (105, 180, 80,  255),
+    "highlight": (155, 215, 115, 255),
+    "trunk":     (95,  58,  18,  255),
+    "trunk_d":   (60,  35,  10,  255),
+}
+
+AW_AUTUMN_TREE: dict[str, tuple[int, int, int, int]] = {
+    "outline":   (80,  40,  10,  255),
+    "dark":      (180, 90,  20,  255),
+    "mid":       (220, 140, 30,  255),
+    "light":     (240, 185, 60,  255),
+    "highlight": (255, 220, 100, 255),
+    "trunk":     (95,  58,  18,  255),
+    "trunk_d":   (60,  35,  10,  255),
+}
+
+AW_BLUE_ROUND_TREE: dict[str, tuple[int, int, int, int]] = {
+    "outline":   (10,  35,  80,  255),
+    "dark":      (35,  85,  160, 255),
+    "mid":       (60,  130, 210, 255),
+    "light":     (95,  170, 235, 255),
+    "highlight": (160, 215, 255, 255),
+    "trunk":     (95,  58,  18,  255),
+    "trunk_d":   (60,  35,  10,  255),
+}
+
 # Neutral grass tile colors
 GRASS_LIGHT: tuple[int, int, int, int] = (168, 200, 72, 255)
 GRASS_DARK:  tuple[int, int, int, int] = (136, 168, 48, 255)

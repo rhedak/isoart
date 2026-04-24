@@ -15,7 +15,7 @@ def _render(tree: PineTree) -> Image.Image:
 def test_default_tree_has_pixels():
     tree = PineTree()
     img = _render(tree)
-    non_transparent = sum(1 for p in img.getdata() if p[3] > 0)
+    non_transparent = sum(1 for v in img.getchannel("A").tobytes() if v > 0)
     assert non_transparent > 10, "Tree should draw visible pixels"
 
 
@@ -32,7 +32,7 @@ def test_all_palettes_render():
     for palette in [AW_PINE, AW_BLUE_PINE, AW_SNOW_PINE]:
         tree = PineTree(palette=palette)
         img = _render(tree)
-        non_transparent = sum(1 for p in img.getdata() if p[3] > 0)
+        non_transparent = sum(1 for v in img.getchannel("A").tobytes() if v > 0)
         assert non_transparent > 10
 
 
@@ -40,7 +40,7 @@ def test_tier_counts():
     for n in [2, 3, 4]:
         tree = PineTree(tier_count=n)
         img = _render(tree)
-        non_transparent = sum(1 for p in img.getdata() if p[3] > 0)
+        non_transparent = sum(1 for v in img.getchannel("A").tobytes() if v > 0)
         assert non_transparent > 10
 
 

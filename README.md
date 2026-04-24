@@ -67,25 +67,65 @@ IsoCanvas(
 
 ### Sprites
 
-**`PineTree`** — a layered Christmas-tree shaped sprite.
+**`PineTree`** — layered Christmas-tree silhouette.
 
 ```python
 PineTree(
     tier_count: int = 3,   # number of foliage tiers
-    tier_size: int = 24,   # pixel width of the widest tier
+    tier_size: int = 30,   # pixel width of the widest tier
     palette: dict = AW_PINE,
+    outline_width: int = 1,
+)
+```
+
+**`RoundTree`** — deciduous tree with rounded dome tiers.
+
+```python
+RoundTree(
+    tier_count: int = 3,
+    tier_size: int = 28,
+    palette: dict = AW_ROUND_TREE,
+)
+```
+
+**`Mountain`** — two rounded rocky humps side by side.
+
+```python
+Mountain(
+    size: int = 28,        # pixel width of the front hump (sprite is ~2× wider)
+    palette: dict = AW_MOUNTAIN,
+)
+```
+
+**`House`** — iso box with a pitched roof, window, and door.
+
+```python
+House(
+    width: int = 26,
+    depth: int = 18,
+    wall_h: int = 13,
+    roof_h: int = 11,
+    palette: dict = AW_HOUSE_NEUTRAL,
 )
 ```
 
 ### Palettes
 
-Three built-in palettes for `PineTree`:
+| Constant | Used with | Style |
+|----------|-----------|-------|
+| `AW_PINE` | `PineTree` | Classic green pine |
+| `AW_BLUE_PINE` | `PineTree` | Cold blue-green pine |
+| `AW_SNOW_PINE` | `PineTree` | Snow-capped pine |
+| `AW_ROUND_TREE` | `RoundTree` | Green deciduous |
+| `AW_AUTUMN_TREE` | `RoundTree` | Orange/yellow autumn |
+| `AW_BLUE_ROUND_TREE` | `RoundTree` | Blue faction tint |
+| `AW_MOUNTAIN` | `Mountain` | Grey rock |
+| `AW_MOUNTAIN_SNOW` | `Mountain` | Snow-capped rock |
+| `AW_HOUSE_RED` | `House` | Red roof |
+| `AW_HOUSE_BLUE` | `House` | Blue roof |
+| `AW_HOUSE_NEUTRAL` | `House` | Tan roof |
 
-| Constant | Style |
-|----------|-------|
-| `AW_PINE` | Classic green pine |
-| `AW_BLUE_PINE` | Cold blue-green pine |
-| `AW_SNOW_PINE` | Snow-capped pine |
+See `samples/` for a rendered PNG of each variant.
 
 ### Transform utilities
 
@@ -107,7 +147,7 @@ verts = tile_diamond(gx, gy, tile_w, tile_h, origin)
 ```bash
 uv sync          # install all dependencies including dev
 pytest           # run tests
-ruff check src   # lint
+ruff check       # lint
 uv build         # produce wheel + sdist in dist/
 ```
 

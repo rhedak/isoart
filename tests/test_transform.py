@@ -1,6 +1,5 @@
 """Tests for isometric coordinate transforms."""
 
-import pytest
 from isoart import screen_to_world, world_to_screen
 
 

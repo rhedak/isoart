@@ -188,24 +188,22 @@ class PineTree(IsoSprite):
 
 
 class RoundTree(IsoSprite):
-    """Isometric deciduous tree — rounded dome tiers (AW forest style).
+    """Isometric deciduous tree — single ovoid blob (AW forest style).
 
-    Each tier is a filled ellipse with pieslice-based left/right shading
-    so the blob reads as a 3-D dome rather than a flat disc.
+    One crown-shaped ellipse with pieslice-based left/right shading so
+    the foliage reads as a 3-D dome rather than a flat disc.
 
     Parameters
     ----------
     tier_count:
-        Number of foliage tiers (2–4). Default 3.
+        Kept for API compatibility; currently unused.
     tier_size:
-        Width of the widest (bottom) tier in pixels. Default 28.
+        Pixel width of the crown. Default 28.
     palette:
         Color dict with keys: outline, dark, mid, light, highlight, trunk, trunk_d.
     """
 
-    _TIER_OVERLAP = 0.52   # how much each tier overlaps the one below
-    _TIER_SHRINK  = 0.70   # width shrink per tier step
-    _TIER_ASPECT  = 1.35   # tier height as fraction of half-width — tall enough to dome
+    _ASPECT = 1.10  # crown height as fraction of width — slightly taller than wide
 
     def __init__(
         self,
@@ -220,8 +218,9 @@ class RoundTree(IsoSprite):
         self._buf: Image.Image | None = None
 
     def get_size(self) -> tuple[int, int]:
+        crown_h = int(self.tier_size * self._ASPECT)
         w = self.tier_size + 8
-        h = self._total_height() + self._trunk_height() + 10
+        h = crown_h + self._trunk_height() + 6
         return w, h
 
     def get_anchor(self) -> tuple[int, int]:
@@ -234,25 +233,10 @@ class RoundTree(IsoSprite):
         target.alpha_composite(buf, dest=(x - ax, y - ay))
 
     def _trunk_height(self) -> int:
-        return max(4, self.tier_size // 6)
+        return max(5, self.tier_size // 5)
 
     def _trunk_width(self) -> int:
-        return max(2, self.tier_size // 10)
-
-    def _tier_half_widths(self) -> list[int]:
-        hw = self.tier_size // 2
-        return [max(4, int(hw * (self._TIER_SHRINK ** i))) for i in range(self.tier_count)]
-
-    def _tier_height(self, half_w: int) -> int:
-        return max(5, int(half_w * self._TIER_ASPECT))
-
-    def _total_height(self) -> int:
-        hws = self._tier_half_widths()
-        heights = [self._tier_height(hw) for hw in hws]
-        total = heights[0]
-        for h in heights[1:]:
-            total += int(h * (1.0 - self._TIER_OVERLAP))
-        return total
+        return max(2, self.tier_size // 8)
 
     def _render(self) -> Image.Image:
         if self._buf is not None:
@@ -266,37 +250,58 @@ class RoundTree(IsoSprite):
         cx = w // 2
         trunk_h = self._trunk_height()
         trunk_w = self._trunk_width()
-        hws = self._tier_half_widths()
-        tier_base_y = h - trunk_h - 2
+        crown_h = int(self.tier_size * self._ASPECT)
+        half_w  = self.tier_size // 2
 
-        for i, half_w in enumerate(hws):
-            tier_h = self._tier_height(half_w)
-            top_y = tier_base_y - tier_h
+        base_y = h - trunk_h
 
-            t = i / max(1, self.tier_count - 1)
-            dark_c = _lerp_color(p["dark"],  p["mid"],       t)
-            lit_c  = _lerp_color(p["mid"],   p["light"],     t)
-            hi_c   = _lerp_color(p["light"], p["highlight"], t)
+        # --- Crown: two stacked ellipses tuned so the silhouette tapers
+        # smoothly from wide base to narrow top, without a waist notch.
+        # Tuning: at the upper ellipse's equator the two widths match
+        # (~0.5·half_w), giving a smooth crossover.
+        lo_hw = half_w
+        lo_h  = int(crown_h * 0.80)
+        lo_cy = base_y - int(crown_h * 0.40)
+        lo_outer = [cx - lo_hw - 1, lo_cy - lo_h // 2 - 1, cx + lo_hw + 1, lo_cy + lo_h // 2 + 1]
+        lo_inner = [cx - lo_hw,     lo_cy - lo_h // 2,     cx + lo_hw,     lo_cy + lo_h // 2]
 
-            box = [cx - half_w - 1, top_y - 1, cx + half_w + 1, tier_base_y + 1]
+        up_hw = max(3, int(half_w * 0.55))
+        up_h  = int(crown_h * 0.50)
+        up_cy = base_y - int(crown_h * 0.75)
+        up_outer = [cx - up_hw - 1, up_cy - up_h // 2 - 1, cx + up_hw + 1, up_cy + up_h // 2 + 1]
+        up_inner = [cx - up_hw,     up_cy - up_h // 2,     cx + up_hw,     up_cy + up_h // 2]
 
-            # Outline
-            draw.ellipse(box, fill=p["outline"])
-            inner = [cx - half_w, top_y, cx + half_w, tier_base_y]
-            # Base fill — shadow/right tone
-            draw.ellipse(inner, fill=dark_c)
-            # Left half — lit (Pillow: 90°=bottom, clockwise to 270°=top traces left arc)
-            draw.pieslice(inner, 90, 270, fill=lit_c)
-            # Highlight blob near top-left
-            if tier_h > 7:
-                hl = max(2, half_w // 4)
-                hx = cx - half_w // 3
-                hy = top_y + tier_h // 5
-                draw.ellipse([hx - hl, hy, hx + hl, hy + hl * 2], fill=hi_c)
+        # Outlines first (lower then upper, so upper's outline trims any
+        # stray lower outline at the waist)
+        draw.ellipse(lo_outer, fill=p["outline"])
+        draw.ellipse(up_outer, fill=p["outline"])
 
-            tier_base_y -= int(tier_h * (1.0 - self._TIER_OVERLAP))
+        # Shadow base fills
+        draw.ellipse(lo_inner, fill=p["dark"])
+        draw.ellipse(up_inner, fill=p["dark"])
 
-        # Trunk
+        # Left-half lit on both
+        draw.pieslice(lo_inner, 90, 270, fill=p["mid"])
+        draw.pieslice(up_inner, 90, 270, fill=p["mid"])
+
+        # Soft top-left rim of lighter tone — only on the upper ellipse
+        # (that's the visually "top" part of the teardrop)
+        rim_inset = max(1, up_hw // 5)
+        rim_box = [
+            cx - up_hw + rim_inset,
+            up_cy - up_h // 2 + rim_inset,
+            cx + up_hw - rim_inset,
+            up_cy + up_h // 2 - rim_inset,
+        ]
+        draw.pieslice(rim_box, 180, 300, fill=p["light"])
+
+        # Highlight blob near top-left of the upper ellipse
+        hl = max(2, up_hw // 4)
+        hx = cx - up_hw // 3
+        hy = up_cy - up_h // 4
+        draw.ellipse([hx - hl, hy, hx + hl, hy + hl * 2], fill=p["highlight"])
+
+        # --- Trunk ---
         ty0 = h - trunk_h
         draw.rectangle([cx - trunk_w,     ty0,     cx + trunk_w + 1, h],     fill=p["trunk_d"])
         draw.rectangle([cx - trunk_w,     ty0,     cx + trunk_w,     h - 1], fill=p["trunk"])

@@ -4,10 +4,10 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Polish round 1 — Phases 5 & 6 done. Phase 7 (recompose scene) pending.
+**Phase:** Polish round 1 complete (Phases 5-7). PoC scene dramatically closer to reference.
 **Last update:** 2026-04-24
-**Last commit:** pending — Phase 6 commit
-**Sample scorecard:** 14/14 PASS. `topdown_preview.png` now has soft seams.
+**Last commit:** pending — Phase 7 commit
+**Sample scorecard:** 14/14 PASS. Scene has 66 placed sprites (up from ~30).
 **Tests:** 32/32 passing. Ruff clean.
 
 ## Scope (locked)
@@ -79,10 +79,22 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - [x] `draw_tile` uses fill-relative 15%-darkening for soft seams
 - [x] 2 new tests: soft differs from hard & is closer to fill; `None` leaves fill color exposed
 
-### Phase 7 — Scene recomposition (pending)
-- [ ] Recompose `examples/aw_dogfights.py` for density, asymmetric layout, forest patches, tighter bases
-- [ ] Use `Tank(scale=0.7)` and smaller House dimensions in scene
-- [ ] Iterate: compare to reference, rate gaps, up to 2 more passes
+### Phase 7 — Scene recomposition ✅
+- [x] 24×16 grid (up from 20×12); tile_size 18 (down from 22); 66 sprites (up from ~30)
+- [x] Zig-zag water channel (1-tile west shift at row 8) — non-symmetric coastline
+- [x] Asymmetric mountain distribution: 14-sprite chain along east coast + 4-sprite NW cluster
+- [x] Two forest patches on west (pines + round trees), one big patch on east, singletons for variety
+- [x] L-shaped house clusters for each base (smaller `House(width=14, depth=10, wall_h=12, roof_h=4)`)
+- [x] 6 tanks per faction at `Tank(scale=0.7)`; 2 forward-deployed on bridge road each side
+- [x] PASS on first iteration — all gap dimensions addressed
+
+## Parked for future rounds
+
+- Distinct building types: HQ (flag), factory/barracks, city
+- More unit types: infantry, APC, artillery, plane
+- Directional road tiles (NS / EW / corners / T-junctions)
+- Curved coastlines / cliffs
+- FE-leaning polish: painterly terrain, detailed villages/castles
 
 ### Phase 4 — Docs + polish ✅
 - [x] Update README: `TopDownCanvas`, `TerrainType`, `draw_map`, `Tank`, `AW_TANK_RED/BLUE`. New intro mentions both projections.

@@ -186,7 +186,7 @@ def main() -> None:
         bg_color=(28, 28, 36, 255),
         tile_size=ts,
         origin=(pad, pad),
-        tile_outline="soft",
+        tile_outline=None,
     )
 
     canvas.draw_map(_decode_map())

@@ -29,6 +29,7 @@ from isoart import (
     PineTree,
     RoundTree,
     TerrainType,
+    TopDownCanvas,
 )
 from isoart.sprites.base import IsoSprite
 
@@ -74,16 +75,29 @@ def make_sample(name: str, sprite: IsoSprite) -> None:
     print(f"  {name}.png")
 
 
+_MAP_LAYOUT = [
+    # shoreline + bridge demo
+    "GGGBWWBGGG",
+    "GGBWWWWBGG",
+    "GRRRRRRRRG",
+    "GGBWWWWBGG",
+    "GGGBWWBGGG",
+]
+
+
+def _decode_map() -> list[list[TerrainType]]:
+    legend = {
+        "G": TerrainType.GRASS,
+        "B": TerrainType.BEACH,
+        "W": TerrainType.WATER,
+        "R": TerrainType.ROAD,
+    }
+    return [[legend[c] for c in row] for row in _MAP_LAYOUT]
+
+
 def make_terrain_preview() -> None:
-    """Render a multi-terrain map so the tile system gets a visual sample too."""
-    G, W, B, R = TerrainType.GRASS, TerrainType.WATER, TerrainType.BEACH, TerrainType.ROAD
-    tiles = [
-        [G, G, G, B, W, W, B, G, G, G],
-        [G, G, B, W, W, W, W, B, G, G],
-        [G, R, R, R, R, R, R, R, R, G],
-        [G, G, B, W, W, W, W, B, G, G],
-        [G, G, G, B, W, W, B, G, G, G],
-    ]
+    """Iso diamond-tile terrain preview."""
+    tiles = _decode_map()
     cols, rows = len(tiles[0]), len(tiles)
     tw, th = 32, 16
     w = (cols + rows) * tw // 2 + 40
@@ -97,9 +111,27 @@ def make_terrain_preview() -> None:
     print("  terrain_preview.png")
 
 
+def make_topdown_preview() -> None:
+    """Top-down square-tile terrain preview (AW-style)."""
+    tiles = _decode_map()
+    cols, rows = len(tiles[0]), len(tiles)
+    ts = 20
+    pad = 16
+    w = cols * ts + pad * 2
+    h = rows * ts + pad * 2
+    canvas = TopDownCanvas(
+        w, h, bg_color=(28, 28, 36, 255),
+        tile_size=ts, origin=(pad, pad),
+    )
+    canvas.draw_map(tiles)
+    canvas.save(str(OUT / "topdown_preview.png"), scale=SCALE)
+    print("  topdown_preview.png")
+
+
 if __name__ == "__main__":
     print(f"Writing to {OUT}/")
     for name, sprite in SPRITES:
         make_sample(name, sprite)
     make_terrain_preview()
+    make_topdown_preview()
     print("Done.")

@@ -1,6 +1,6 @@
-"""Tests for IsoCanvas terrain tile system."""
+"""Tests for IsoCanvas and TopDownCanvas terrain tile systems."""
 
-from isoart import IsoCanvas, TerrainType
+from isoart import IsoCanvas, TerrainType, TopDownCanvas
 
 
 def _center_pixel(canvas: IsoCanvas, gx: int, gy: int) -> tuple[int, int, int, int]:
@@ -68,3 +68,92 @@ def test_draw_map_water_land_border_shows_both_colors():
     r1, g1, b1, _ = _center_pixel(c, 1, 0)
     assert b0 > g0, "Left tile should be blue (water)"
     assert g1 > max(r1, b1), "Right tile should be green (grass)"
+
+
+# ------------------------------------------------------------------
+# TopDownCanvas
+# ------------------------------------------------------------------
+
+
+def _td_center_pixel(c: TopDownCanvas, gx: int, gy: int) -> tuple[int, int, int, int]:
+    ts = c.tile_size
+    px = c.origin[0] + gx * ts + ts // 2
+    py = c.origin[1] + gy * ts + ts // 2
+    return c.image.getpixel((px, py))
+
+
+def test_topdown_draw_tile_grass():
+    c = TopDownCanvas(200, 200, tile_size=24, origin=(10, 10))
+    c.draw_tile(TerrainType.GRASS, 0, 0)
+    r, g, b, _ = _td_center_pixel(c, 0, 0)
+    assert g > r and g > b
+
+
+def test_topdown_draw_tile_water():
+    c = TopDownCanvas(200, 200, tile_size=24, origin=(10, 10))
+    c.draw_tile(TerrainType.WATER, 0, 0)
+    r, g, b, _ = _td_center_pixel(c, 0, 0)
+    assert b > r and b > g
+
+
+def test_topdown_draw_map_paints_every_cell():
+    c = TopDownCanvas(400, 300, tile_size=24, origin=(10, 10))
+    tiles = [
+        [TerrainType.GRASS, TerrainType.BEACH, TerrainType.WATER],
+        [TerrainType.ROAD,  TerrainType.GRASS, TerrainType.BEACH],
+        [TerrainType.WATER, TerrainType.ROAD,  TerrainType.GRASS],
+    ]
+    c.draw_map(tiles)
+    for gy in range(3):
+        for gx in range(3):
+            _, _, _, a = _td_center_pixel(c, gx, gy)
+            assert a == 255, f"Tile ({gx},{gy}) not painted"
+
+
+def test_topdown_sprite_anchors_at_tile_center_bottom():
+    """A sprite drawn at tile (gx,gy) should place its foot at the tile's
+    centre-bottom. We verify via a minimal stub sprite that records the
+    foot-position it was blitted at."""
+    from isoart.sprites.base import IsoSprite
+
+    class Probe(IsoSprite):
+        def __init__(self):
+            self.foot = None
+
+        def get_anchor(self):
+            return 0, 0
+
+        def get_size(self):
+            return 0, 0
+
+        def blit(self, target, x, y):
+            self.foot = (x, y)
+
+    c = TopDownCanvas(400, 400, tile_size=20, origin=(30, 40))
+    probe = Probe()
+    c.draw(probe, 2, 3)
+    # Expected: centre-bottom of tile (2,3) = origin + ((2+0.5)*20, (3+1)*20)
+    assert probe.foot == (30 + 50, 40 + 80)
+
+
+def test_topdown_sprite_gz_raises():
+    from isoart.sprites.base import IsoSprite
+
+    class Probe(IsoSprite):
+        def __init__(self):
+            self.foot = None
+
+        def get_anchor(self):
+            return 0, 0
+
+        def get_size(self):
+            return 0, 0
+
+        def blit(self, target, x, y):
+            self.foot = (x, y)
+
+    c = TopDownCanvas(400, 400, tile_size=20, origin=(0, 0))
+    probe = Probe()
+    c.draw(probe, 1, 1, gz=1)
+    # gz=1 should lift by tile_size (20 px) upward
+    assert probe.foot == (30, 40 - 20)

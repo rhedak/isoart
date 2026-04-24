@@ -138,3 +138,22 @@ BEACH_OUTLINE: tuple[int, int, int, int] = (170, 140, 70,  255)
 ROAD_LIGHT:    tuple[int, int, int, int] = (185, 185, 185, 255)
 ROAD_DARK:     tuple[int, int, int, int] = (145, 145, 145, 255)
 ROAD_OUTLINE:  tuple[int, int, int, int] = (85,  85,  85,  255)
+
+# Tank / unit palettes — keys: outline, body_l, body_d, turret, barrel, tread
+AW_TANK_RED: dict[str, tuple[int, int, int, int]] = {
+    "outline": (60,  20,  20,  255),
+    "body_l":  (220, 70,  55,  255),
+    "body_d":  (160, 40,  35,  255),
+    "turret":  (235, 100, 80,  255),
+    "barrel":  (60,  55,  55,  255),
+    "tread":   (40,  35,  35,  255),
+}
+
+AW_TANK_BLUE: dict[str, tuple[int, int, int, int]] = {
+    "outline": (20,  20,  60,  255),
+    "body_l":  (70,  120, 215, 255),
+    "body_d":  (40,  75,  165, 255),
+    "turret":  (110, 160, 240, 255),
+    "barrel":  (55,  55,  60,  255),
+    "tread":   (35,  35,  45,  255),
+}

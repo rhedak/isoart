@@ -4,11 +4,11 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 
 ## Current status
 
-**Phase:** Phase 1 done, Phase 2 started (palettes only) then paused. New **Phase 1.5** inserted: top-down terrain canvas (see below).
+**Phase:** Phase 1 + 1.5 done. Ready for Phase 2 (Tank sprite).
 **Last update:** 2026-04-24
-**Last commit:** `f46c5d6` — terrain preview sample
-**Sample scorecard:** 12/12 PASS (pines, round trees, mountains, houses). Tank palettes added (not yet exported/used). `terrain_preview.png` added.
-**Tests:** 17/17 passing. Ruff clean.
+**Last commit:** pending — Phase 1.5 commit
+**Sample scorecard:** 12/12 PASS (pines, round trees, mountains, houses). `terrain_preview.png` (iso) + `topdown_preview.png` (square) added.
+**Tests:** 22/22 passing. Ruff clean.
 
 ## Scope (locked)
 
@@ -28,7 +28,7 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - [x] Export `TerrainType` from `src/isoart/__init__.py`
 - [x] Unit test: `tests/test_canvas.py` — 6 tests covering per-tile colors + map painting + border
 
-### Phase 1.5 — Top-down terrain canvas (new)
+### Phase 1.5 — Top-down terrain canvas ✅
 
 **Rationale:** the AW reference draws terrain as top-down square tiles while keeping iso perspective for units/buildings/trees. Our current `IsoCanvas` draws terrain as iso diamonds — that reads as a puzzle board, not a battle map. To match the AW vibe we need top-down terrain with iso sprites layered on top.
 
@@ -40,10 +40,10 @@ Live progress document for the PoC that replicates `references/AW_Dogfights_Map.
 - Z raises sprite by `gz * ts` as before.
 
 **Files:**
-- [ ] `src/isoart/canvas.py` — add `TopDownCanvas` class alongside `IsoCanvas`. Same method names (`draw_map`, `draw_tile`, `draw`, `save`, `get_image`). Tile rendering uses rectangles instead of diamonds. No checker variation on square tiles — use a subtle inset outline for tile separation instead (AW maps show faint tile seams).
-- [ ] Export `TopDownCanvas` from `src/isoart/__init__.py`.
-- [ ] `samples/generate.py` — add `topdown_preview.png` alongside the iso `terrain_preview.png`, so both styles are visible for comparison.
-- [ ] `tests/test_canvas.py` — mirror the existing tests for `TopDownCanvas` (per-tile color, map painting).
+- [x] `src/isoart/canvas.py` — `TopDownCanvas` class with `draw_map` / `draw_tile` / `draw` / `save` / `get_image`. Square tiles via `draw.rectangle`. Sprite anchor = tile centre-bottom; `gz * tile_size` lifts.
+- [x] Export `TopDownCanvas` from `src/isoart/__init__.py`.
+- [x] `samples/generate.py` — `topdown_preview.png` shows the AW-style square-tile version alongside the iso `terrain_preview.png`. Map layout shared between both via a small legend helper.
+- [x] `tests/test_canvas.py` — 5 new tests: per-tile colors (grass, water), full map painting, sprite anchor math, `gz` lifting.
 
 **Out of scope for Phase 1.5 (park for Phase 3):**
 - Whether Phase 3 scene composition uses `TopDownCanvas` (likely yes, given the reference).

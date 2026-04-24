@@ -155,3 +155,94 @@ class IsoCanvas:
 
     def get_image(self) -> Image.Image:
         return self.image
+
+
+class TopDownCanvas:
+    """Top-down square-tile canvas for AW-style maps.
+
+    Terrain tiles render as squares on an orthogonal grid (no iso
+    projection for the ground). Sprites still use their iso pixel-art
+    geometry — they sit at the visual centre-bottom of a tile, so
+    occlusion and shading read correctly even though the ground is
+    flat.
+
+    This is the right projection for game-screen-style maps where
+    tiles should read as a flat top-down board. Use :class:`IsoCanvas`
+    instead when you want diamond-tile iso terrain.
+    """
+
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        bg_color: tuple[int, int, int, int] = (0, 0, 0, 0),
+        tile_size: int = 24,
+        origin: tuple[int, int] = (0, 0),
+    ) -> None:
+        self.tile_size = tile_size
+        self.image = Image.new("RGBA", (width, height), bg_color)
+        self.origin = origin
+
+    # ------------------------------------------------------------------
+    # Terrain
+    # ------------------------------------------------------------------
+
+    def draw_tile(
+        self,
+        tile_type: TerrainType,
+        gx: int,
+        gy: int,
+    ) -> None:
+        """Paint a single square tile of the given terrain type."""
+        light, _, outline = _TERRAIN_PALETTE[tile_type]
+        ts = self.tile_size
+        x0 = self.origin[0] + gx * ts
+        y0 = self.origin[1] + gy * ts
+        draw = ImageDraw.Draw(self.image)
+        draw.rectangle([x0, y0, x0 + ts - 1, y0 + ts - 1], fill=light, outline=outline)
+
+    def draw_map(
+        self,
+        tiles: list[list[TerrainType]],
+    ) -> None:
+        """Paint a 2-D terrain map. ``tiles[gy][gx]`` gives the tile type."""
+        for gy, row in enumerate(tiles):
+            for gx, tile_type in enumerate(row):
+                self.draw_tile(tile_type, gx, gy)
+
+    # ------------------------------------------------------------------
+    # Sprites
+    # ------------------------------------------------------------------
+
+    def draw(
+        self,
+        sprite: IsoSprite,
+        gx: float,
+        gy: float,
+        gz: float = 0,
+    ) -> None:
+        """Place a sprite with its foot at the centre-bottom of tile (gx, gy).
+
+        The sprite itself retains its iso geometry; only the placement
+        anchor is top-down. Positive gz raises the sprite upward by
+        ``gz * tile_size`` pixels.
+        """
+        ts = self.tile_size
+        foot_x = self.origin[0] + int((gx + 0.5) * ts)
+        foot_y = self.origin[1] + int((gy + 1) * ts) - int(gz * ts)
+        sprite.blit(self.image, foot_x, foot_y)
+
+    # ------------------------------------------------------------------
+    # Output
+    # ------------------------------------------------------------------
+
+    def save(self, path: str, scale: int = 1) -> None:
+        """Save canvas to *path* as PNG. *scale* uses nearest-neighbor upscale."""
+        img = self.image
+        if scale != 1:
+            w, h = img.size
+            img = img.resize((w * scale, h * scale), Image.NEAREST)
+        img.save(path)
+
+    def get_image(self) -> Image.Image:
+        return self.image

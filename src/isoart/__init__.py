@@ -1,6 +1,6 @@
 """isoart — 2D isometric pixel-art asset library."""
 
-from .canvas import IsoCanvas, TerrainType
+from .canvas import IsoCanvas, TerrainType, TopDownCanvas
 from .palette import (
     AW_AUTUMN_TREE,
     AW_BLUE_PINE,
@@ -19,6 +19,7 @@ from .transform import screen_to_world, tile_diamond, world_to_screen
 
 __all__ = [
     "IsoCanvas",
+    "TopDownCanvas",
     "TerrainType",
     "PineTree",
     "RoundTree",

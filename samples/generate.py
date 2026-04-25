@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from isoart import (
     AW_AUTUMN_TREE,
+    TankLarge,
     AW_BLUE_PINE,
     AW_BLUE_ROUND_TREE,
     AW_HOUSE_BLUE,
@@ -34,6 +35,8 @@ from isoart import (
     TerrainType,
     TopDownCanvas,
 )
+from isoart.palette import AW_INFANTRY_BLUE, AW_INFANTRY_RED
+from isoart.sprites.units import Infantry
 from isoart.sprites.base import IsoSprite
 
 TILE_W, TILE_H = 32, 16
@@ -134,10 +137,51 @@ def make_topdown_preview() -> None:
     print("  topdown_preview.png")
 
 
+def make_unit_sample(name: str, *sprites: IsoSprite) -> None:
+    """Render one or more unit sprites on a small top-down grass tile grid.
+
+    Uses TopDownCanvas (the real usage context) at 8× scale so individual
+    pixels are easy to inspect.
+    """
+    ts = 24
+    pad = 12
+    cols, rows = max(3, len(sprites) * 2), 3
+    w = cols * ts + pad * 2
+    h = rows * ts + pad * 2
+    canvas = TopDownCanvas(
+        w, h,
+        bg_color=(28, 28, 36, 255),
+        tile_size=ts,
+        origin=(pad, pad),
+        tile_outline=None,
+    )
+    tiles = [[TerrainType.GRASS] * cols for _ in range(rows)]
+    canvas.draw_map(tiles)
+    canvas.draw_terrain_details(tiles)
+
+    # Space sprites evenly across the middle row
+    for i, sprite in enumerate(sprites):
+        gx = 1 + i * 2 if len(sprites) > 1 else cols // 2
+        canvas.draw(sprite, gx, 1)
+
+    canvas.save(str(OUT / f"{name}.png"), scale=8)
+    print(f"  {name}.png")
+
+
 if __name__ == "__main__":
     print(f"Writing to {OUT}/")
     for name, sprite in SPRITES:
         make_sample(name, sprite)
     make_terrain_preview()
     make_topdown_preview()
+    # Unit close-ups on top-down canvas at 8×
+    make_unit_sample("tank_red_td",  Tank(palette=AW_TANK_RED))
+    make_unit_sample("tank_blue_td", Tank(palette=AW_TANK_BLUE))
+    make_unit_sample("tanks_both",   Tank(palette=AW_TANK_RED), Tank(palette=AW_TANK_BLUE))
+    make_unit_sample("infantry_red_td",  Infantry(palette=AW_INFANTRY_RED))
+    make_unit_sample("infantry_blue_td", Infantry(palette=AW_INFANTRY_BLUE))
+    # TankLarge close-ups
+    make_unit_sample("tank_large_red_td",  TankLarge(palette=AW_TANK_RED))
+    make_unit_sample("tank_large_blue_td", TankLarge(palette=AW_TANK_BLUE))
+    make_unit_sample("tank_large_both",    TankLarge(palette=AW_TANK_RED), TankLarge(palette=AW_TANK_BLUE))
     print("Done.")

@@ -8,21 +8,83 @@ from PIL import Image, ImageDraw
 
 from .palette import (
     BEACH_DARK,
+    BEACH_GRAIN,
     BEACH_LIGHT,
     BEACH_OUTLINE,
     GRASS_DARK,
     GRASS_LIGHT,
+    GRASS_TUFT,
     ROAD_DARK,
     ROAD_LIGHT,
+    ROAD_MARK,
     ROAD_OUTLINE,
+    ROAD_STUD,
     TILE_OUTLINE,
     WATER_DARK,
     WATER_LIGHT,
     WATER_OUTLINE,
+    WATER_SHIMMER,
 )
 from .sprites.base import IsoSprite
 from .sprites.terrain import _darken
 from .transform import tile_diamond, world_to_screen
+
+
+def _lerp_color(
+    a: tuple[int, int, int, int],
+    b: tuple[int, int, int, int],
+    t: float,
+) -> tuple[int, int, int, int]:
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(4))  # type: ignore[return-value]
+
+
+def _tile_tone(gx: int, gy: int) -> float:
+    """Return a 0..1 tone blend for tile (gx, gy).
+
+    Uses a two-level hash so same-tone tiles cluster in patches of ~4 tiles
+    rather than alternating every tile. Value 0 → light, 1 → dark.
+    """
+    zone_x = gx // 4
+    zone_y = gy // 4
+    zone_hash = (zone_x * 31 + zone_y * 17) % 8
+    local_hash = (gx * 7 + gy * 13) % 4
+    raw = (zone_hash * 4 + local_hash) % 16
+    return raw / 24.0  # keep amplitude low — max ~0.67 blend toward dark
+
+
+def _proximity_bias(
+    tiles: list[list[TerrainType]],
+    gx: int,
+    gy: int,
+    tile_type: TerrainType,
+) -> float:
+    """Return a small extra dark-blend (0..0.15) based on map neighbourhood.
+
+    Rules:
+    - Grass/beach adjacent to water: +0.10 (damp shadow near water edge)
+    - Road adjacent to grass/beach: +0.05 (road edge slightly soiled)
+    - Otherwise: 0
+    """
+    rows = len(tiles)
+    cols = len(tiles[0]) if rows else 0
+
+    def _type(tx: int, ty: int) -> TerrainType | None:
+        if 0 <= ty < rows and 0 <= tx < cols:
+            return tiles[ty][tx]
+        return None
+
+    neighbours = [
+        _type(gx - 1, gy), _type(gx + 1, gy),
+        _type(gx, gy - 1), _type(gx, gy + 1),
+    ]
+
+    if tile_type in (TerrainType.GRASS, TerrainType.BEACH):
+        if TerrainType.WATER in neighbours:
+            return 0.10
+    if tile_type is TerrainType.ROAD:
+        if any(n in (TerrainType.GRASS, TerrainType.BEACH) for n in neighbours if n):
+            return 0.05
+    return 0.0
 
 
 class TerrainType(Enum):
@@ -208,22 +270,24 @@ class TopDownCanvas:
         tile_type: TerrainType,
         gx: int,
         gy: int,
+        _extra_dark: float = 0.0,
     ) -> None:
         """Paint a single square tile of the given terrain type."""
-        light, _, outline = _TERRAIN_PALETTE[tile_type]
+        light, dark, outline = _TERRAIN_PALETTE[tile_type]
+        fill = _lerp_color(light, dark, min(1.0, _tile_tone(gx, gy) + _extra_dark))
         ts = self.tile_size
         x0 = self.origin[0] + gx * ts
         y0 = self.origin[1] + gy * ts
         draw = ImageDraw.Draw(self.image)
 
         if self.tile_outline == "soft":
-            tile_out: tuple[int, int, int, int] | None = _darken(light, 0.15)
+            tile_out: tuple[int, int, int, int] | None = _darken(fill, 0.15)
         elif self.tile_outline == "hard":
             tile_out = outline
         else:
             tile_out = None
 
-        draw.rectangle([x0, y0, x0 + ts - 1, y0 + ts - 1], fill=light, outline=tile_out)
+        draw.rectangle([x0, y0, x0 + ts - 1, y0 + ts - 1], fill=fill, outline=tile_out)
 
     def draw_map(
         self,
@@ -232,7 +296,106 @@ class TopDownCanvas:
         """Paint a 2-D terrain map. ``tiles[gy][gx]`` gives the tile type."""
         for gy, row in enumerate(tiles):
             for gx, tile_type in enumerate(row):
-                self.draw_tile(tile_type, gx, gy)
+                bias = _proximity_bias(tiles, gx, gy, tile_type)
+                self.draw_tile(tile_type, gx, gy, _extra_dark=bias)
+
+    def draw_road_markings(self, tiles: list[list[TerrainType]]) -> None:
+        """Draw directional centre-line markings over already-painted road tiles.
+
+        Call after ``draw_map``. Analyses each road tile's N/S/E/W neighbours
+        and draws a dashed centre stripe along every road-road axis.
+        """
+        rows = len(tiles)
+        cols = len(tiles[0]) if rows else 0
+        ts = self.tile_size
+        draw = ImageDraw.Draw(self.image)
+
+        def _is_road(gx: int, gy: int) -> bool:
+            if 0 <= gy < rows and 0 <= gx < cols:
+                return tiles[gy][gx] is TerrainType.ROAD
+            return False
+
+        for gy, row in enumerate(tiles):
+            for gx, tile_type in enumerate(row):
+                if tile_type is not TerrainType.ROAD:
+                    continue
+
+                x0 = self.origin[0] + gx * ts
+                y0 = self.origin[1] + gy * ts
+                cx = x0 + ts // 2
+                cy = y0 + ts // 2
+
+                has_n = _is_road(gx, gy - 1)
+                has_s = _is_road(gx, gy + 1)
+                has_e = _is_road(gx + 1, gy)
+                has_w = _is_road(gx - 1, gy)
+
+                # NS stripe — dashed vertical line at tile centre x
+                if has_n or has_s:
+                    y_start = y0 + 1
+                    y_end   = y0 + ts - 1
+                    for py in range(y_start, y_end, 4):
+                        draw.line([(cx, py), (cx, min(py + 1, y_end))],
+                                  fill=ROAD_MARK, width=1)
+
+                # EW stripe — dashed horizontal line at tile centre y
+                if has_e or has_w:
+                    x_start = x0 + 1
+                    x_end   = x0 + ts - 1
+                    for px in range(x_start, x_end, 4):
+                        draw.line([(px, cy), (min(px + 1, x_end), cy)],
+                                  fill=ROAD_MARK, width=1)
+
+    def draw_terrain_details(self, tiles: list[list[TerrainType]]) -> None:
+        """Draw subtle per-tile texture details over already-painted terrain.
+
+        Call after ``draw_map`` (and ``draw_road_markings`` if used).
+        All positions are derived deterministically from (gx, gy) so the
+        same map always produces the same texture pattern.
+        """
+        ts = self.tile_size
+        draw = ImageDraw.Draw(self.image)
+
+        for gy, row in enumerate(tiles):
+            for gx, tile_type in enumerate(row):
+                x0 = self.origin[0] + gx * ts
+                y0 = self.origin[1] + gy * ts
+
+                if tile_type is TerrainType.GRASS:
+                    # 2–3 small vertical grass tufts per tile, scattered
+                    # deterministically by tile position.
+                    offsets = [
+                        ((gx * 7 + gy * 3) % (ts - 4) + 2,
+                         (gx * 3 + gy * 5) % (ts - 4) + 2),
+                        ((gx * 11 + gy * 7) % (ts - 4) + 2,
+                         (gx * 5 + gy * 11) % (ts - 4) + 2),
+                    ]
+                    for dx, dy in offsets:
+                        draw.line(
+                            [(x0 + dx, y0 + dy), (x0 + dx, y0 + dy + 1)],
+                            fill=GRASS_TUFT, width=1,
+                        )
+
+                elif tile_type is TerrainType.WATER:
+                    # 1 short horizontal shimmer line per tile
+                    sx = (gx * 5 + gy * 3) % (ts - 6) + 2
+                    sy = (gy * 5 + gx * 2) % (ts - 4) + 2
+                    draw.line(
+                        [(x0 + sx, y0 + sy), (x0 + sx + 3, y0 + sy)],
+                        fill=WATER_SHIMMER, width=1,
+                    )
+
+                elif tile_type is TerrainType.BEACH:
+                    # 3 scattered single-pixel grain dots
+                    for i in range(3):
+                        bx = (gx * (7 + i * 4) + gy * (3 + i * 2)) % (ts - 2) + 1
+                        by = (gy * (5 + i * 3) + gx * (9 + i)) % (ts - 2) + 1
+                        draw.point((x0 + bx, y0 + by), fill=BEACH_GRAIN)
+
+                elif tile_type is TerrainType.ROAD:
+                    # 2 subtle stud marks at the tile quarter-points
+                    draw.point((x0 + ts // 4,     y0 + ts // 2), fill=ROAD_STUD)
+                    draw.point((x0 + 3 * ts // 4, y0 + ts // 2), fill=ROAD_STUD)
 
     # ------------------------------------------------------------------
     # Sprites

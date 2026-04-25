@@ -145,22 +145,27 @@ class Mountain(IsoSprite):
             ]
             draw.polygon(pts, fill=p["light"])
         else:
-            # Rock-face specks on the lit side — adds texture without randomness
-            spec_color = p["dark"]
-            step = max(3, height // 5)
-            for i in range(1, 4):
+            # Rock-face specks — alternating bright speck / dark crevice so they
+            # read on both the lit and shadow faces. 2-px horizontal lines survive
+            # the 2× upscale that the scene output uses.
+            step = max(2, height // 6)
+            for i in range(1, 6):
                 sy = top_y + i * step
                 if sy >= base_y - 2:
                     break
-                # width of peak at this y, on the lit (left) side
                 w_at_y = (half_w * (sy - top_y)) // height
-                sx = cx - w_at_y // 2 - i  # stagger
+                sx = cx - w_at_y // 2 - i  # stagger leftward on lit face
                 if sx < cx - w_at_y + 1:
                     continue
-                draw.point((sx, sy), fill=spec_color)
+                speck = p["light"] if i % 2 == 0 else p["outline"]
+                draw.line([(sx, sy), (sx + 1, sy)], fill=speck, width=1)
 
         # Single bright pixel at the peak
         draw.point(peak, fill=p["light"])
+
+        # Re-assert silhouette edges last so fill never bleeds over them
+        draw.line([peak, base_l], fill=p["outline"], width=1)
+        draw.line([peak, base_r], fill=p["outline"], width=1)
 
 
 class House(IsoSprite):
@@ -205,7 +210,8 @@ class House(IsoSprite):
     # ------------------------------------------------------------------
 
     def get_size(self) -> tuple[int, int]:
-        w = self.width + self.depth + 8
+        # side_r is at cx + fw//2 + depth, so we need width ≥ fw + 2*depth + margin
+        w = self.width + 2 * self.depth + 8
         h = self.wall_h + self.roof_h + self.depth // 2 + 10
         return w, h
 
@@ -305,21 +311,35 @@ class House(IsoSprite):
             fill=rim, width=1,
         )
 
+        # ---- Right silhouette edge — drawn last so nothing overwrites it ----
+        # side_r_r / side_r_t / side_r all share the same x, so this is a
+        # perfectly vertical edge. p["outline"] is near-black and vanishes
+        # against the dark background. Fix: pure-black outer edge + a dark
+        # inner shadow 1 px inside to give contrast against the wall fill too.
+        draw.line([side_r_r, side_r_t, side_r], fill=(0, 0, 0, 255), width=1)
+        inner = _darken(p["wall_s"], 0.45)
+        draw.line(
+            [(side_r_r[0] - 1, side_r_r[1]),
+             (side_r_t[0] - 1, side_r_t[1]),
+             (side_r[0] - 1, side_r[1])],
+            fill=inner, width=1,
+        )
+
         # ---- Rooftop antenna with small flag ----
         # Place near the back-left of the rooftop diamond
         mast_base_x = (front_l_r[0] + back_l_r[0]) // 2
         mast_base_y = (front_l_r[1] + back_l_r[1]) // 2
-        mast_h = max(4, rh + 2)
+        mast_h = max(6, rh + 4)
         mast_top = (mast_base_x, mast_base_y - mast_h)
         draw.line([mast_top, (mast_base_x, mast_base_y)], fill=p["outline"], width=1)
-        # Flag — 3×2 rectangle to the right of the mast top
+        # Flag — 5×3 rectangle, big enough to read at 2× output scale
         flag_color = p["roof_l"]
         draw.rectangle(
-            [mast_top[0] + 1, mast_top[1], mast_top[0] + 4, mast_top[1] + 2],
+            [mast_top[0] + 1, mast_top[1], mast_top[0] + 5, mast_top[1] + 3],
             fill=flag_color,
         )
         draw.rectangle(
-            [mast_top[0] + 1, mast_top[1], mast_top[0] + 4, mast_top[1] + 2],
+            [mast_top[0] + 1, mast_top[1], mast_top[0] + 5, mast_top[1] + 3],
             outline=p["outline"],
         )
 
@@ -339,15 +359,25 @@ class House(IsoSprite):
         wh: int,
         fw: int,
     ) -> None:
-        """Draw a symmetric 2×2 grid of square windows on the front wall."""
-        wsz = max(3, fw // 8)
+        """Draw windows on the front wall.
+
+        Narrow buildings (fw < 18) get a single row of two windows centred
+        vertically — four cramped windows would nearly merge at that width.
+        Wider buildings keep the 2×2 grid.
+        """
+        wsz = max(4, fw // 6)
         x_mid = (tl[0] + tr[0]) // 2
         gap_x = fw // 4
-        # Two rows — upper and lower, evenly spaced inside the wall
-        y_up = tl[1] + wh // 4 - wsz // 2
-        y_lo = tl[1] + (wh * 3) // 4 - wsz // 2
+        if fw < 18:
+            # Single row at vertical midpoint — more breathing room
+            y_mid = tl[1] + wh // 2 - wsz // 2
+            rows = (y_mid,)
+        else:
+            y_up = tl[1] + wh // 4 - wsz // 2
+            y_lo = tl[1] + (wh * 3) // 4 - wsz // 2
+            rows = (y_up, y_lo)
         for wx in (x_mid - gap_x, x_mid + gap_x):
-            for wy in (y_up, y_lo):
+            for wy in rows:
                 rect = [wx - wsz // 2, wy, wx + wsz // 2, wy + wsz]
                 draw.rectangle(rect, fill=p["window"])
                 draw.rectangle(rect, outline=p["outline"])
@@ -386,6 +416,177 @@ class House(IsoSprite):
 
         draw.polygon([tl, tr, br, bl], fill=p["window"])
         _poly_outline(draw, [tl, tr, br, bl], p["outline"])
+
+
+class HQ(IsoSprite):
+    """Isometric HQ building — wider, lower, more imposing than a House.
+
+    Features a tall centre mast with a large faction flag, a parapet border
+    around the flat roof, and a wide horizontal window band on the front wall.
+    Uses the same palette keys as House so AW_HOUSE_RED/BLUE work directly.
+
+    Parameters
+    ----------
+    width:
+        Front face width in pixels. Default 22 (wider than House's 24 default
+        but proportionally squarer with the larger depth).
+    depth:
+        Side face depth. Default 14.
+    wall_h:
+        Wall height below the roof. Default 18.
+    roof_h:
+        Thickness of the flat roof slab. Default 6.
+    palette:
+        Same key set as House: outline, roof_l, roof_r, roof_ridge,
+        wall_f, wall_s, window, door.
+    """
+
+    def __init__(
+        self,
+        width: int = 22,
+        depth: int = 14,
+        wall_h: int = 18,
+        roof_h: int = 6,
+        palette: dict[str, tuple[int, int, int, int]] | None = None,
+    ) -> None:
+        from ..palette import AW_HOUSE_RED
+        self.width  = width
+        self.depth  = depth
+        self.wall_h = wall_h
+        self.roof_h = roof_h
+        self.palette = palette if palette is not None else dict(AW_HOUSE_RED)
+        self._buf: Image.Image | None = None
+
+    def get_size(self) -> tuple[int, int]:
+        w = self.width + 2 * self.depth + 8
+        h = self.wall_h + self.roof_h + self.depth // 2 + 14
+        return w, h
+
+    def get_anchor(self) -> tuple[int, int]:
+        w, h = self.get_size()
+        return w // 2, h
+
+    def blit(self, target: Image.Image, x: int, y: int) -> None:
+        buf = self._render()
+        ax, ay = self.get_anchor()
+        target.alpha_composite(buf, dest=(x - ax, y - ay))
+
+    def _render(self) -> Image.Image:
+        if self._buf is not None:
+            return self._buf
+
+        w, h = self.get_size()
+        buf = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(buf)
+        p = self.palette
+
+        fw = self.width
+        sd = self.depth
+        wh = self.wall_h
+        rh = self.roof_h
+
+        cx = w // 2
+        cy = h - 2
+
+        # ---- Wall corners ----
+        front_l = (cx - fw // 2,      cy)
+        front_r = (cx + fw // 2,      cy)
+        side_r  = (cx + fw // 2 + sd, cy - sd // 2)
+
+        front_l_t = (front_l[0], front_l[1] - wh)
+        front_r_t = (front_r[0], front_r[1] - wh)
+        side_r_t  = (side_r[0],  side_r[1]  - wh)
+        back_l_t  = (cx - fw // 2 + sd, cy - sd // 2 - wh)
+
+        front_l_r = (front_l_t[0], front_l_t[1] - rh)
+        front_r_r = (front_r_t[0], front_r_t[1] - rh)
+        side_r_r  = (side_r_t[0],  side_r_t[1]  - rh)
+        back_l_r  = (back_l_t[0],  back_l_t[1]  - rh)
+
+        # ---- Side wall ----
+        draw.polygon([front_r_t, side_r_t, side_r, front_r], fill=p["wall_s"])
+        _poly_outline(draw, [front_r_t, side_r_t, side_r, front_r], p["outline"])
+        wall_rim = _lighten(p["wall_s"], 0.30)
+        draw.line(
+            [(side_r_t[0] - 1, side_r_t[1] + 1), (side_r[0] - 1, side_r[1])],
+            fill=wall_rim, width=1,
+        )
+
+        # ---- Front wall ----
+        draw.polygon([front_l_t, front_r_t, front_r, front_l], fill=p["wall_f"])
+        _poly_outline(draw, [front_l_t, front_r_t, front_r, front_l], p["outline"])
+
+        # ---- Wide horizontal window band (single row, spanning most of front) ----
+        win_h = max(3, wh // 5)
+        win_y = front_l_t[1] + wh // 2 - win_h // 2
+        win_x0 = front_l_t[0] + 3
+        win_x1 = front_r_t[0] - 3
+        draw.rectangle([win_x0, win_y, win_x1, win_y + win_h], fill=p["window"])
+        draw.rectangle([win_x0, win_y, win_x1, win_y + win_h], outline=p["outline"])
+
+        # ---- Roof slab ----
+        draw.polygon([front_l_r, front_r_r, front_r_t, front_l_t], fill=p["roof_l"])
+        _poly_outline(draw, [front_l_r, front_r_r, front_r_t, front_l_t], p["outline"])
+        draw.polygon([front_r_r, side_r_r, side_r_t, front_r_t], fill=p["roof_r"])
+        _poly_outline(draw, [front_r_r, side_r_r, side_r_t, front_r_t], p["outline"])
+        draw.polygon([front_l_r, front_r_r, side_r_r, back_l_r], fill=p["roof_ridge"])
+        _poly_outline(draw, [front_l_r, front_r_r, side_r_r, back_l_r], p["outline"])
+
+        # ---- Parapet border along all four edges of the roof top ----
+        parapet = _darken(p["roof_ridge"], 0.20)
+        for a_pt, b_pt in [
+            (front_l_r, front_r_r),
+            (front_r_r, side_r_r),
+            (side_r_r,  back_l_r),
+            (back_l_r,  front_l_r),
+        ]:
+            draw.line([a_pt, b_pt], fill=parapet, width=2)
+
+        # ---- Back-top rim (prevent merging into dark background) ----
+        rim = _lighten(p["roof_ridge"], 0.40)
+        draw.line(
+            [(side_r_r[0] - 1, side_r_r[1] + 1), (back_l_r[0], back_l_r[1] + 1)],
+            fill=rim, width=1,
+        )
+        draw.line(
+            [(back_l_r[0] + 1, back_l_r[1] + 1), (front_l_r[0] + 1, front_l_r[1])],
+            fill=rim, width=1,
+        )
+
+        # ---- Right silhouette edge ----
+        draw.line([side_r_r, side_r_t, side_r], fill=(0, 0, 0, 255), width=1)
+        inner = _darken(p["wall_s"], 0.45)
+        draw.line(
+            [(side_r_r[0] - 1, side_r_r[1]),
+             (side_r_t[0] - 1, side_r_t[1]),
+             (side_r[0] - 1, side_r[1])],
+            fill=inner, width=1,
+        )
+
+        # ---- Tall centre mast + large flag ----
+        mast_base_x = (front_l_r[0] + back_l_r[0]) // 2
+        mast_base_y = (front_l_r[1] + back_l_r[1]) // 2
+        mast_h = max(10, wh // 2)
+        mast_top = (mast_base_x, mast_base_y - mast_h)
+        draw.line([mast_top, (mast_base_x, mast_base_y)], fill=p["outline"], width=1)
+        # Flag: 8×5 px — prominent faction colour rectangle
+        flag_color = p["roof_l"]
+        draw.rectangle(
+            [mast_top[0] + 1, mast_top[1], mast_top[0] + 8, mast_top[1] + 4],
+            fill=flag_color,
+        )
+        draw.rectangle(
+            [mast_top[0] + 1, mast_top[1], mast_top[0] + 8, mast_top[1] + 4],
+            outline=p["outline"],
+        )
+        # Faction emblem: small 2×2 square centred on the flag
+        ex = mast_top[0] + 4
+        ey = mast_top[1] + 2
+        emblem = _lighten(flag_color, 0.5)
+        draw.rectangle([ex, ey, ex + 1, ey + 1], fill=emblem)
+
+        self._buf = buf
+        return buf
 
 
 def _poly_outline(

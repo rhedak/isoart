@@ -120,24 +120,50 @@ AW_BLUE_ROUND_TREE: dict[str, tuple[int, int, int, int]] = {
 }
 
 # Grass tile colors
-GRASS_LIGHT:   tuple[int, int, int, int] = (168, 200, 72,  255)
-GRASS_DARK:    tuple[int, int, int, int] = (136, 168, 48,  255)
-TILE_OUTLINE:  tuple[int, int, int, int] = (88,  120, 24,  255)
+GRASS_LIGHT:   tuple[int, int, int, int] = (204, 228, 76,  255)
+GRASS_DARK:    tuple[int, int, int, int] = (156, 188, 44,  255)
+TILE_OUTLINE:  tuple[int, int, int, int] = (96,  130, 24,  255)
 
 # Water tile colors — mid blue with checker variation
-WATER_LIGHT:   tuple[int, int, int, int] = (105, 165, 230, 255)
-WATER_DARK:    tuple[int, int, int, int] = (70,  130, 205, 255)
-WATER_OUTLINE: tuple[int, int, int, int] = (40,  80,  150, 255)
+WATER_LIGHT:   tuple[int, int, int, int] = (82,  168, 242, 255)
+WATER_DARK:    tuple[int, int, int, int] = (56,  132, 214, 255)
+WATER_OUTLINE: tuple[int, int, int, int] = (38,  80,  158, 255)
 
 # Beach / sand tile colors
-BEACH_LIGHT:   tuple[int, int, int, int] = (245, 225, 150, 255)
-BEACH_DARK:    tuple[int, int, int, int] = (220, 195, 110, 255)
+BEACH_LIGHT:   tuple[int, int, int, int] = (250, 230, 155, 255)
+BEACH_DARK:    tuple[int, int, int, int] = (215, 188, 100, 255)
 BEACH_OUTLINE: tuple[int, int, int, int] = (170, 140, 70,  255)
 
 # Road / paved tile colors
 ROAD_LIGHT:    tuple[int, int, int, int] = (185, 185, 185, 255)
 ROAD_DARK:     tuple[int, int, int, int] = (145, 145, 145, 255)
 ROAD_OUTLINE:  tuple[int, int, int, int] = (85,  85,  85,  255)
+ROAD_MARK:     tuple[int, int, int, int] = (215, 215, 215, 255)
+
+# Terrain detail overlay colours
+GRASS_TUFT:    tuple[int, int, int, int] = (120, 158, 30,  255)
+WATER_SHIMMER: tuple[int, int, int, int] = (140, 200, 255, 255)
+BEACH_GRAIN:   tuple[int, int, int, int] = (195, 168, 85,  255)
+ROAD_STUD:     tuple[int, int, int, int] = (200, 200, 200, 255)
+
+# Infantry palettes — keys: outline, helmet, body, legs, skin, pack
+AW_INFANTRY_RED: dict[str, tuple[int, int, int, int]] = {
+    "outline": (50,  15,  15,  255),
+    "helmet":  (200, 50,  40,  255),
+    "body":    (210, 80,  60,  255),
+    "legs":    (140, 40,  30,  255),
+    "skin":    (230, 190, 150, 255),
+    "pack":    (100, 70,  40,  255),
+}
+
+AW_INFANTRY_BLUE: dict[str, tuple[int, int, int, int]] = {
+    "outline": (15,  15,  50,  255),
+    "helmet":  (50,  90,  200, 255),
+    "body":    (70,  120, 215, 255),
+    "legs":    (35,  65,  150, 255),
+    "skin":    (230, 190, 150, 255),
+    "pack":    (50,  60,  100, 255),
+}
 
 # Tank / unit palettes — keys: outline, body_l, body_d, turret, barrel, tread
 AW_TANK_RED: dict[str, tuple[int, int, int, int]] = {

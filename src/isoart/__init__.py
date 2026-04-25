@@ -8,6 +8,8 @@ from .palette import (
     AW_HOUSE_BLUE,
     AW_HOUSE_NEUTRAL,
     AW_HOUSE_RED,
+    AW_INFANTRY_BLUE,
+    AW_INFANTRY_RED,
     AW_MOUNTAIN,
     AW_MOUNTAIN_SNOW,
     AW_PINE,
@@ -16,7 +18,7 @@ from .palette import (
     AW_TANK_BLUE,
     AW_TANK_RED,
 )
-from .sprites import House, Mountain, PineTree, RoundTree, Tank
+from .sprites import House, HQ, Infantry, Mountain, PineTree, RoundTree, Tank, TankLarge
 from .transform import screen_to_world, tile_diamond, world_to_screen
 
 __all__ = [
@@ -28,6 +30,9 @@ __all__ = [
     "Mountain",
     "House",
     "Tank",
+    "TankLarge",
+    "Infantry",
+    "HQ",
     "world_to_screen",
     "screen_to_world",
     "tile_diamond",
@@ -44,4 +49,6 @@ __all__ = [
     "AW_HOUSE_NEUTRAL",
     "AW_TANK_RED",
     "AW_TANK_BLUE",
+    "AW_INFANTRY_RED",
+    "AW_INFANTRY_BLUE",
 ]

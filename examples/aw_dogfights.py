@@ -17,6 +17,8 @@ from isoart import (
     AW_BLUE_ROUND_TREE,
     AW_HOUSE_BLUE,
     AW_HOUSE_RED,
+    AW_INFANTRY_BLUE,
+    AW_INFANTRY_RED,
     AW_MOUNTAIN,
     AW_MOUNTAIN_SNOW,
     AW_PINE,
@@ -24,6 +26,8 @@ from isoart import (
     AW_TANK_BLUE,
     AW_TANK_RED,
     House,
+    HQ,
+    Infantry,
     Mountain,
     PineTree,
     RoundTree,
@@ -75,15 +79,15 @@ def _decode_map() -> list[list[TerrainType]]:
 
 
 def _pine(palette=AW_PINE) -> PineTree:
-    return PineTree(tier_count=3, tier_size=14, palette=palette)
+    return PineTree(tier_count=3, tier_size=16, palette=palette)
 
 
 def _round_tree(palette=AW_ROUND_TREE) -> RoundTree:
-    return RoundTree(tier_size=14, palette=palette)
+    return RoundTree(tier_size=16, palette=palette)
 
 
 def _mountain(snow: bool = False) -> Mountain:
-    return Mountain(size=16, palette=AW_MOUNTAIN_SNOW if snow else AW_MOUNTAIN)
+    return Mountain(size=18, palette=AW_MOUNTAIN_SNOW if snow else AW_MOUNTAIN)
 
 
 def _house(red: bool) -> House:
@@ -94,7 +98,11 @@ def _house(red: bool) -> House:
 
 
 def _tank(red: bool) -> Tank:
-    return Tank(scale=0.7, palette=AW_TANK_RED if red else AW_TANK_BLUE)
+    return Tank(scale=0.78, palette=AW_TANK_RED if red else AW_TANK_BLUE)
+
+
+def _infantry(red: bool) -> Infantry:
+    return Infantry(scale=0.7, palette=AW_INFANTRY_RED if red else AW_INFANTRY_BLUE)
 
 
 # ---------------------------------------------------------------------------
@@ -151,12 +159,14 @@ def _scene_sprites() -> list[tuple[object, int, int]]:
         (_pine(AW_BLUE_PINE), 20, 14),
     ])
 
-    # --- Red base: L-shaped house cluster on the west ---
-    for gx, gy in [(2, 4), (3, 4), (2, 5), (4, 5), (2, 6)]:
+    # --- Red base: HQ at front + L-shaped house cluster ---
+    P.append((HQ(palette=AW_HOUSE_RED), 2, 4))
+    for gx, gy in [(3, 4), (2, 5), (4, 5), (2, 6)]:
         P.append((_house(red=True), gx, gy))
 
-    # --- Blue base: L-shape mirrored on the east ---
-    for gx, gy in [(20, 4), (21, 4), (21, 5), (19, 5), (21, 6)]:
+    # --- Blue base: HQ at front + L-shape mirrored ---
+    P.append((HQ(palette=AW_HOUSE_BLUE), 21, 4))
+    for gx, gy in [(20, 4), (21, 5), (19, 5), (21, 6)]:
         P.append((_house(red=False), gx, gy))
 
     # --- Red tanks: 6, clustered near base with 2 forward on the bridge road ---
@@ -166,6 +176,14 @@ def _scene_sprites() -> list[tuple[object, int, int]]:
     # --- Blue tanks: 6, mirroring red ---
     for gx, gy in [(18, 3), (17, 4), (18, 6), (19, 6), (15, 5), (16, 5)]:
         P.append((_tank(red=False), gx, gy))
+
+    # --- Red infantry: 4, scattered around the red base ---
+    for gx, gy in [(3, 6), (6, 3), (4, 4), (7, 6)]:
+        P.append((_infantry(red=True), gx, gy))
+
+    # --- Blue infantry: 4, mirroring red ---
+    for gx, gy in [(20, 6), (17, 3), (19, 4), (16, 6)]:
+        P.append((_infantry(red=False), gx, gy))
 
     return P
 
@@ -189,7 +207,10 @@ def main() -> None:
         tile_outline=None,
     )
 
-    canvas.draw_map(_decode_map())
+    tiles = _decode_map()
+    canvas.draw_map(tiles)
+    canvas.draw_road_markings(tiles)
+    canvas.draw_terrain_details(tiles)
 
     # Back-to-front so sprites at larger gy occlude earlier ones
     sprites = _scene_sprites()

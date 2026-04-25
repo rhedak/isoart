@@ -171,6 +171,45 @@ def test_topdown_no_outline():
     assert c.image.getpixel((10, 10)) == GRASS_LIGHT
 
 
+def test_road_markings_runs_without_error():
+    c = TopDownCanvas(200, 100, tile_size=20, origin=(0, 0))
+    tiles = [
+        [TerrainType.GRASS, TerrainType.ROAD, TerrainType.ROAD, TerrainType.GRASS],
+        [TerrainType.GRASS, TerrainType.ROAD, TerrainType.ROAD, TerrainType.GRASS],
+    ]
+    c.draw_map(tiles)
+    c.draw_road_markings(tiles)  # must not raise
+
+
+def test_road_markings_draws_stripe_on_connected_tile():
+    """A road tile with a ROAD neighbour should have a pixel lighter than ROAD_LIGHT."""
+    from isoart.palette import ROAD_LIGHT
+
+    c = TopDownCanvas(200, 100, tile_size=20, origin=(0, 0))
+    tiles = [
+        [TerrainType.ROAD, TerrainType.ROAD],
+    ]
+    c.draw_map(tiles)
+    c.draw_road_markings(tiles)
+    # Centre of tile (0,0): x=10, y=10 — should contain a ROAD_MARK pixel nearby
+    found_lighter = False
+    for px in range(1, 20):
+        r, g, b, a = c.image.getpixel((px, 10))
+        if a > 0 and r > ROAD_LIGHT[0]:
+            found_lighter = True
+            break
+    assert found_lighter, "Road marking stripe not found"
+
+
+def test_terrain_details_runs_without_error():
+    c = TopDownCanvas(200, 200, tile_size=20, origin=(0, 0))
+    tiles = [
+        [TerrainType.GRASS, TerrainType.WATER, TerrainType.BEACH, TerrainType.ROAD],
+    ]
+    c.draw_map(tiles)
+    c.draw_terrain_details(tiles)  # must not raise
+
+
 def test_topdown_sprite_gz_raises():
     from isoart.sprites.base import IsoSprite
 

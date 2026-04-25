@@ -130,7 +130,7 @@ class PineTree(IsoSprite):
             # --- choose shading colors ---
             # Bottom tier is in shadow (darker), top is brightest.
             t = i / max(1, self.tier_count - 1)  # 0.0 at bottom, 1.0 at top
-            left_color  = _lerp_color(p["mid"],   p["light"],     t)
+            left_color  = _lerp_color(p["light"], p["highlight"], t)
             right_color = _lerp_color(p["dark"],  p["mid"],       t)
             hi_color    = _lerp_color(p["light"], p["highlight"], t)
 
@@ -276,13 +276,17 @@ class RoundTree(IsoSprite):
         draw.ellipse(lo_outer, fill=p["outline"])
         draw.ellipse(up_outer, fill=p["outline"])
 
-        # Shadow base fills
-        draw.ellipse(lo_inner, fill=p["dark"])
-        draw.ellipse(up_inner, fill=p["dark"])
+        # Base fill: mid tone (not dark) — dark shadow applied selectively below
+        draw.ellipse(lo_inner, fill=p["mid"])
+        draw.ellipse(up_inner, fill=p["mid"])
 
-        # Left-half lit on both
-        draw.pieslice(lo_inner, 90, 270, fill=p["mid"])
-        draw.pieslice(up_inner, 90, 270, fill=p["mid"])
+        # Shadow on the right / lower-right quadrant — gives 3D dome reading
+        draw.pieslice(lo_inner, 300, 90, fill=p["dark"])
+        draw.pieslice(up_inner, 300, 90, fill=p["dark"])
+
+        # Lit left-half overlay to widen the bright zone
+        draw.pieslice(lo_inner, 120, 270, fill=p["light"])
+        draw.pieslice(up_inner, 120, 270, fill=p["light"])
 
         # Soft top-left rim of lighter tone — only on the upper ellipse
         # (that's the visually "top" part of the teardrop)
